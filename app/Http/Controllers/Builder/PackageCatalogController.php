@@ -6,14 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Builder\PackageCatalogRequest;
 use App\Models\Package;
 use App\Models\PackageCategory;
+use App\Services\LoadoutBuilder;
 use App\Services\PackageCatalog;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PackageCatalogController extends Controller
 {
-    public function __invoke(PackageCatalogRequest $request, PackageCatalog $catalog): Response
+    public function __invoke(PackageCatalogRequest $request, PackageCatalog $catalog, LoadoutBuilder $builder): Response
     {
+        $loadout = $builder->currentDraft($request->session(), $request->user());
+
         $packages = $catalog
             ->search($request->filters())
             ->through(fn (Package $package): array => [
@@ -44,6 +47,18 @@ class PackageCatalogController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get(['name', 'slug']),
+            'loadout' => [
+                'id' => $loadout->id,
+                'title' => $loadout->title,
+                'selected_package_ids' => $loadout->packages()
+                    ->whereNotNull('package_id')
+                    ->pluck('package_id')
+                    ->all(),
+                'custom_packages' => $loadout->packages()
+                    ->where('is_custom', true)
+                    ->orderBy('position')
+                    ->get(['id', 'display_name', 'composer_name', 'source_url']),
+            ],
             'filters' => $request->filters(),
         ]);
     }

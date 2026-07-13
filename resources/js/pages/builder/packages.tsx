@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     Download,
     PackagePlus,
@@ -9,6 +9,8 @@ import {
     Star,
 } from 'lucide-react';
 
+import { store as storeCustomPackage } from '@/actions/App/Http/Controllers/Builder/CustomPackageController';
+import { store as storeLoadoutPackage } from '@/actions/App/Http/Controllers/Builder/LoadoutPackageController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +28,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { packages as builderPackages } from '@/routes/builder';
 
 type Category = {
     name: string;
@@ -74,9 +77,24 @@ type Filters = {
     sort?: string | null;
 };
 
+type CustomLoadoutPackage = {
+    id: number;
+    display_name: string;
+    composer_name: string | null;
+    source_url: string | null;
+};
+
+type DraftLoadout = {
+    id: number;
+    title: string;
+    selected_package_ids: number[];
+    custom_packages: CustomLoadoutPackage[];
+};
+
 type Props = {
     packages: PaginatedPackages;
     categories: Category[];
+    loadout: DraftLoadout;
     filters: Filters;
 };
 
@@ -100,6 +118,7 @@ function selectedValue(value: string | null | undefined, fallback = 'all') {
 export default function BuilderPackages({
     packages,
     categories,
+    loadout,
     filters,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -113,7 +132,7 @@ export default function BuilderPackages({
         event.preventDefault();
 
         router.get(
-            '/builder/packages',
+            builderPackages.url(),
             {
                 search: search || undefined,
                 category: category === 'all' ? undefined : category,
@@ -279,7 +298,7 @@ export default function BuilderPackages({
                                         type="button"
                                         variant="outline"
                                         onClick={() =>
-                                            router.get('/builder/packages')
+                                            router.get(builderPackages.url())
                                         }
                                     >
                                         Reset
@@ -296,18 +315,57 @@ export default function BuilderPackages({
                                 Attach an unlisted package to this loadout.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-3">
-                            <Input
-                                value={customPackageUrl}
-                                onChange={(event) =>
-                                    setCustomPackageUrl(event.target.value)
-                                }
-                                placeholder="https://packagist.org/packages/vendor/name"
-                            />
-                            <Button disabled={!customPackageUrl}>
-                                <Plus className="size-4" />
-                                Add to loadout
-                            </Button>
+                        <CardContent>
+                            <Form
+                                className="flex flex-col gap-3"
+                                onSuccess={() => setCustomPackageUrl('')}
+                                {...storeCustomPackage.form()}
+                            >
+                                {({ errors, processing }) => (
+                                    <>
+                                        <Input
+                                            name="package_url"
+                                            value={customPackageUrl}
+                                            onChange={(event) =>
+                                                setCustomPackageUrl(
+                                                    event.target.value,
+                                                )
+                                            }
+                                            placeholder="https://packagist.org/packages/vendor/name"
+                                        />
+                                        {errors.package_url && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.package_url}
+                                            </p>
+                                        )}
+                                        <Button
+                                            disabled={
+                                                processing || !customPackageUrl
+                                            }
+                                        >
+                                            <Plus className="size-4" />
+                                            Add to loadout
+                                        </Button>
+                                    </>
+                                )}
+                            </Form>
+                            {loadout.custom_packages.length > 0 && (
+                                <div className="mt-4 flex flex-col gap-2 border-t pt-4">
+                                    {loadout.custom_packages.map((pkg) => (
+                                        <div
+                                            key={pkg.id}
+                                            className="rounded-md bg-muted px-3 py-2 text-sm"
+                                        >
+                                            <div className="font-medium">
+                                                {pkg.display_name}
+                                            </div>
+                                            <div className="font-mono text-xs text-muted-foreground">
+                                                {pkg.composer_name}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </section>
@@ -375,10 +433,40 @@ export default function BuilderPackages({
                                             'Pending'}
                                     </div>
                                 </div>
-                                <Button variant="outline">
-                                    <Plus className="size-4" />
-                                    Select package
-                                </Button>
+                                <Form {...storeLoadoutPackage.form()}>
+                                    {({ processing }) => {
+                                        const selected =
+                                            loadout.selected_package_ids.includes(
+                                                catalogPackage.id,
+                                            );
+
+                                        return (
+                                            <>
+                                                <input
+                                                    name="package_id"
+                                                    type="hidden"
+                                                    value={catalogPackage.id}
+                                                />
+                                                <Button
+                                                    className="w-full"
+                                                    disabled={
+                                                        processing || selected
+                                                    }
+                                                    variant={
+                                                        selected
+                                                            ? 'secondary'
+                                                            : 'outline'
+                                                    }
+                                                >
+                                                    <Plus className="size-4" />
+                                                    {selected
+                                                        ? 'Selected'
+                                                        : 'Select package'}
+                                                </Button>
+                                            </>
+                                        );
+                                    }}
+                                </Form>
                             </CardContent>
                         </Card>
                     ))}
@@ -424,11 +512,11 @@ BuilderPackages.layout = {
     breadcrumbs: [
         {
             title: 'Builder',
-            href: '/builder/packages',
+            href: builderPackages.url(),
         },
         {
             title: 'Packages',
-            href: '/builder/packages',
+            href: builderPackages.url(),
         },
     ],
 };

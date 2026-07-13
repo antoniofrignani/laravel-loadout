@@ -354,5 +354,7 @@ This is the core value of the product and should be treated as a first-class sea
 - Completed: Sail/MySQL migrations and `PackageCatalogSeeder` applied locally.
 - Completed: package catalog query layer for server-side search, filters, sorting, and pagination.
 - Completed: public builder package-selection route and Inertia page backed by the package catalog query layer.
-- Completed: backend verification with `vendor/bin/sail composer test`.
-- Next: implement selecting curated packages into a loadout and adding loadout-only custom package URLs from the package-selection page.
+- Completed: session-backed draft loadout creation, curated package selection, loadout-only custom package URL entry, package suggestion persistence, and selected/custom package display on the package-selection page.
+- Completed: generated Wayfinder route/action helpers for the builder package endpoints.
+- Completed: backend and frontend verification with `vendor/bin/sail composer test` and `vendor/bin/sail yarn run build`.
+- Next: implement package suggestion moderation emails with signed approve/ignore links, then add the hourly package stat snapshot refresh job.
