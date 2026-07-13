@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, FileText, PackageCheck } from 'lucide-react';
+import { ArrowLeft, Download, FileText, PackageCheck } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -9,7 +9,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { packages as builderPackages, review as builderReview } from '@/routes/builder';
+import {
+    download as builderDownload,
+    packages as builderPackages,
+    review as builderReview,
+} from '@/routes/builder';
 
 type Loadout = {
     id: number;
@@ -52,12 +56,20 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                             .
                         </p>
                     </div>
-                    <Button asChild variant="outline">
-                        <Link href={builderPackages.url()}>
-                            <ArrowLeft className="size-4" />
-                            Back to packages
-                        </Link>
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                        <Button asChild variant="outline">
+                            <Link href={builderPackages.url()}>
+                                <ArrowLeft className="size-4" />
+                                Back to packages
+                            </Link>
+                        </Button>
+                        <Button asChild>
+                            <a href={builderDownload.url()}>
+                                <Download className="size-4" />
+                                Download zip
+                            </a>
+                        </Button>
+                    </div>
                 </header>
 
                 <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">

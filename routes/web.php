@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Builder\CustomPackageController;
+use App\Http\Controllers\Builder\DownloadController;
 use App\Http\Controllers\Builder\LoadoutPackageController;
 use App\Http\Controllers\Builder\PackageCatalogController;
 use App\Http\Controllers\Builder\ReviewController;
@@ -12,6 +13,7 @@ Route::get('builder/packages', PackageCatalogController::class)->name('builder.p
 Route::post('builder/packages', [LoadoutPackageController::class, 'store'])->name('builder.packages.store');
 Route::post('builder/custom-packages', [CustomPackageController::class, 'store'])->name('builder.custom-packages.store');
 Route::get('builder/review', ReviewController::class)->name('builder.review');
+Route::get('builder/download', DownloadController::class)->name('builder.download');
 Route::get('package-suggestions/{package_suggestion}/approve', [PackageSuggestionModerationController::class, 'approve'])
     ->middleware('signed')
     ->name('package-suggestions.approve');

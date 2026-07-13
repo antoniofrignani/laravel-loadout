@@ -359,5 +359,6 @@ This is the core value of the product and should be treated as a first-class sea
 - Completed: package suggestion moderation emails with signed approve/ignore links, admin email configuration, and package promotion into the curated catalog.
 - Completed: hourly package stat refresh job, scheduler entry, Packagist/GitHub snapshots, denormalized package stat updates, and failure snapshot recording.
 - Completed: generated artifact preview service and builder review page for `composer.json`, `package.json`, `compose.yaml`, `.env.loadout`, and README.
+- Completed: lean zip archive generation and builder download route using generated artifact previews only.
 - Completed: backend and frontend verification with `vendor/bin/sail composer test` and `vendor/bin/sail yarn run build`.
-- Next: implement lean zip archive generation and download from the reviewed artifact previews.
+- Next: implement saved/public loadout share pages and stable share URLs.
