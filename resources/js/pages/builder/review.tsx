@@ -1,6 +1,14 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Download, FileText, PackageCheck } from 'lucide-react';
+import { Form, Head, Link } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    Download,
+    ExternalLink,
+    FileText,
+    PackageCheck,
+    Share2,
+} from 'lucide-react';
 
+import PublishController from '@/actions/App/Http/Controllers/Builder/PublishController';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -19,6 +27,8 @@ type Loadout = {
     id: number;
     title: string;
     slug: string;
+    is_shareable: boolean;
+    share_url: string | null;
 };
 
 type Artifact = {
@@ -98,9 +108,46 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                                 <div>{artifacts.length}</div>
                             </div>
                             <div className="rounded-md bg-muted p-3 text-muted-foreground">
-                                Zip download comes next; this page locks down
-                                the generated file contract first.
+                                Download contains only generated essential files.
+                                Dependencies are installed by the user after
+                                extraction.
                             </div>
+                            {loadout.is_shareable && loadout.share_url ? (
+                                <div className="rounded-md border p-3">
+                                    <div className="mb-1 text-muted-foreground">
+                                        Share URL
+                                    </div>
+                                    <a
+                                        className="break-all font-mono text-xs underline underline-offset-4"
+                                        href={loadout.share_url}
+                                    >
+                                        {loadout.share_url}
+                                    </a>
+                                    <Button
+                                        asChild
+                                        className="mt-3 w-full"
+                                        size="sm"
+                                        variant="outline"
+                                    >
+                                        <a href={loadout.share_url}>
+                                            <ExternalLink className="size-4" />
+                                            Open public page
+                                        </a>
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Form {...PublishController.form()}>
+                                    {({ processing }) => (
+                                        <Button
+                                            className="w-full"
+                                            disabled={processing}
+                                        >
+                                            <Share2 className="size-4" />
+                                            Publish share link
+                                        </Button>
+                                    )}
+                                </Form>
+                            )}
                         </CardContent>
                     </Card>
 

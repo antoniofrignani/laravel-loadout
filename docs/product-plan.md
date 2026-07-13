@@ -360,5 +360,6 @@ This is the core value of the product and should be treated as a first-class sea
 - Completed: hourly package stat refresh job, scheduler entry, Packagist/GitHub snapshots, denormalized package stat updates, and failure snapshot recording.
 - Completed: generated artifact preview service and builder review page for `composer.json`, `package.json`, `compose.yaml`, `.env.loadout`, and README.
 - Completed: lean zip archive generation and builder download route using generated artifact previews only.
+- Completed: unlisted share publishing, stable slug-based public loadout pages, public zip downloads, and private loadout visibility protection.
 - Completed: backend and frontend verification with `vendor/bin/sail composer test` and `vendor/bin/sail yarn run build`.
-- Next: implement saved/public loadout share pages and stable share URLs.
+- Next: implement editable project basics and starter-stack builder steps before the package selection step.

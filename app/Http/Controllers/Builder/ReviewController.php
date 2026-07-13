@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Builder;
 
+use App\Enums\LoadoutVisibility;
 use App\Http\Controllers\Controller;
 use App\Services\ArtifactGenerator;
 use App\Services\LoadoutBuilder;
@@ -20,6 +21,10 @@ class ReviewController extends Controller
                 'id' => $loadout->id,
                 'title' => $loadout->title,
                 'slug' => $loadout->slug,
+                'is_shareable' => $loadout->visibility !== LoadoutVisibility::Private,
+                'share_url' => $loadout->visibility !== LoadoutVisibility::Private
+                    ? route('loadouts.show', $loadout)
+                    : null,
             ],
             'artifacts' => $generator->preview($loadout),
         ]);

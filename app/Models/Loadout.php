@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\LoadoutVisibility;
+use Carbon\CarbonInterface;
 use Database\Factories\LoadoutFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,7 +11,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -22,8 +22,8 @@ use Illuminate\Support\Carbon;
  * @property int $current_step
  * @property int $star_count
  * @property int $clone_count
- * @property Carbon|null $published_at
- * @property Carbon|null $last_generated_at
+ * @property CarbonInterface|null $published_at
+ * @property CarbonInterface|null $last_generated_at
  */
 #[Fillable([
     'user_id',
@@ -51,6 +51,11 @@ class Loadout extends Model
         'star_count' => 0,
         'clone_count' => 0,
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     /**
      * @param  Builder<Loadout>  $query
