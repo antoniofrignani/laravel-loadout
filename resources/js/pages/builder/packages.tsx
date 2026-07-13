@@ -528,48 +528,50 @@ export default function BuilderPackages({
                                 </CardHeader>
                                 <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
                                     <p>{recommendation.reason}</p>
-                                    {recommendation.package_id ? (
-                                        <Form
-                                            options={{ preserveScroll: true }}
-                                            {...storeLoadoutPackage.form()}
-                                        >
-                                            {({ processing }) => (
-                                                <>
+                                    <Form
+                                        options={{ preserveScroll: true }}
+                                        {...storeLoadoutPackage.form()}
+                                    >
+                                        {({ processing }) => (
+                                            <>
+                                                {recommendation.package_id ? (
                                                     <input
                                                         name="package_id"
                                                         type="hidden"
                                                         value={
-                                                            recommendation.package_id ??
-                                                            ''
+                                                            recommendation.package_id
                                                         }
                                                     />
-                                                    <Button
-                                                        className="w-full"
-                                                        disabled={
-                                                            processing ||
-                                                            recommendation.is_selected
+                                                ) : (
+                                                    <input
+                                                        name="composer_name"
+                                                        type="hidden"
+                                                        value={
+                                                            recommendation.composer_name
                                                         }
-                                                        size="sm"
-                                                        variant={
-                                                            recommendation.is_selected
-                                                                ? 'secondary'
-                                                                : 'outline'
-                                                        }
-                                                    >
-                                                        <Plus className="size-4" />
-                                                        {recommendation.is_selected
-                                                            ? 'Selected'
-                                                            : 'Select package'}
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </Form>
-                                    ) : (
-                                        <p className="text-xs text-muted-foreground">
-                                            Add this package to the curated
-                                            catalog before it can be selected.
-                                        </p>
-                                    )}
+                                                    />
+                                                )}
+                                                <Button
+                                                    className="w-full"
+                                                    disabled={
+                                                        processing ||
+                                                        recommendation.is_selected
+                                                    }
+                                                    size="sm"
+                                                    variant={
+                                                        recommendation.is_selected
+                                                            ? 'secondary'
+                                                            : 'outline'
+                                                    }
+                                                >
+                                                    <Plus className="size-4" />
+                                                    {recommendation.is_selected
+                                                        ? 'Selected'
+                                                        : 'Select package'}
+                                                </Button>
+                                            </>
+                                        )}
+                                    </Form>
                                 </CardContent>
                             </Card>
                         ))}

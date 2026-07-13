@@ -209,6 +209,37 @@ class BuilderPackageCatalogPageTest extends TestCase
             );
     }
 
+    public function test_recommended_official_package_can_be_selected_by_composer_name(): void
+    {
+        $this->withoutVite();
+
+        $this->get(route('builder.runtime'))->assertOk();
+        $this->put(route('builder.runtime.update'), [
+            'database' => 'mysql',
+            'cache' => 'database',
+            'queue' => 'redis',
+            'mail' => 'mailpit',
+            'search' => 'none',
+            'local_runtime' => 'sail',
+        ])->assertRedirect(route('builder.packages'));
+
+        $this
+            ->from(route('builder.packages'))
+            ->post(route('builder.packages.store'), [
+                'composer_name' => 'laravel/horizon',
+            ])
+            ->assertRedirect(route('builder.packages'));
+
+        $package = Package::query()->where('composer_name', 'laravel/horizon')->firstOrFail();
+        $loadout = Loadout::query()->firstOrFail();
+        $selection = LoadoutPackage::query()->whereBelongsTo($loadout)->firstOrFail();
+
+        $this->assertSame($package->id, $selection->package_id);
+        $this->assertSame('Laravel Horizon', $selection->display_name);
+        $this->assertTrue($package->is_official);
+        $this->assertSame(['redis'], $selection->package_snapshot['required_services']);
+    }
+
     public function test_selected_package_notes_and_install_options_can_be_configured(): void
     {
         $this->withoutVite();

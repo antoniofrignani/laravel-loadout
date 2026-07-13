@@ -42,6 +42,30 @@ class PackageCompatibilityAdvisor
     }
 
     /**
+     * @return array{name: string, description: string, tags: array<int, string>, required_services: array<int, string>, post_install_commands?: array<int, string>, publish_commands?: array<int, string>}|null
+     */
+    public function recommendedPackage(string $composerName): ?array
+    {
+        return match ($composerName) {
+            'laravel/horizon' => [
+                'name' => 'Laravel Horizon',
+                'description' => 'Official dashboard and monitoring for Redis queues.',
+                'tags' => ['official', 'queues', 'redis'],
+                'required_services' => ['redis'],
+                'post_install_commands' => ['php artisan horizon:install'],
+            ],
+            'laravel/scout' => [
+                'name' => 'Laravel Scout',
+                'description' => 'Official driver-based full-text search integration for Eloquent.',
+                'tags' => ['official', 'search', 'meilisearch'],
+                'required_services' => ['meilisearch'],
+                'publish_commands' => ['php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"'],
+            ],
+            default => null,
+        };
+    }
+
+    /**
      * @return array<int, string>
      */
     public function warnings(Package $package, Loadout $loadout): array

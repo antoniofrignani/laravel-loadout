@@ -23,7 +23,8 @@ class StoreLoadoutPackageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'package_id' => ['required', 'integer', 'exists:packages,id'],
+            'package_id' => ['required_without:composer_name', 'integer', 'exists:packages,id'],
+            'composer_name' => ['required_without:package_id', 'string', 'max:255'],
         ];
     }
 }
