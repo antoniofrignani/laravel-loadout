@@ -61,7 +61,7 @@ class LoadoutBuilder
         return $loadout;
     }
 
-    public function selectPackage(Loadout $loadout, Package $package): LoadoutPackage
+    public function selectPackage(Loadout $loadout, Package $package, ?string $notes = null): LoadoutPackage
     {
         $selection = LoadoutPackage::query()->firstOrNew([
             'loadout_id' => $loadout->id,
@@ -80,6 +80,10 @@ class LoadoutBuilder
             'install_options' => [],
             'position' => $selection->position ?: $this->nextPackagePosition($loadout),
         ])->save();
+
+        if ($notes && ! $selection->notes) {
+            $selection->forceFill(['notes' => $notes])->save();
+        }
 
         if ($isNewSelection) {
             $package->increment('usage_count');

@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Boxes, PackageCheck, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Boxes, PackageCheck, Plus, Sparkles, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { show as showProfile } from '@/routes/profiles';
 import {
+    importMethod as importCollection,
     index as collectionsIndex,
 } from '@/routes/package-collections';
 import {
@@ -106,6 +107,19 @@ export default function PackageCollectionShow({
                             {collection.description ??
                                 'A curated package shortlist for Laravel projects.'}
                         </p>
+                        <Form
+                            {...importCollection.form(collection.slug)}
+                            className="mt-6"
+                        >
+                            {({ processing }) => (
+                                <Button type="submit" disabled={processing}>
+                                    <Sparkles className="size-4" />
+                                    {processing
+                                        ? 'Importing...'
+                                        : 'Use in builder'}
+                                </Button>
+                            )}
+                        </Form>
                     </header>
 
                     <section className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">

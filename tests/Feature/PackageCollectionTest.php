@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Loadout;
+use App\Models\LoadoutPackage;
 use App\Models\Package;
 use App\Models\PackageCollection;
 use App\Models\PackageCollectionItem;
@@ -130,6 +132,83 @@ class PackageCollectionTest extends TestCase
 
         $this->assertDatabaseMissing('package_collection_items', [
             'package_collection_id' => $collection->id,
+            'package_id' => $package->id,
+        ]);
+    }
+
+    public function test_public_collection_can_be_imported_into_anonymous_builder_draft(): void
+    {
+        $owner = User::factory()->create();
+        $collection = PackageCollection::factory()->for($owner)->public()->create([
+            'slug' => 'saas-picks',
+        ]);
+        $firstPackage = Package::factory()->create(['usage_count' => 4]);
+        $secondPackage = Package::factory()->create(['usage_count' => 9]);
+        PackageCollectionItem::factory()->for($collection, 'collection')->for($firstPackage, 'package')->create([
+            'notes' => 'Queue dashboard setup.',
+            'position' => 0,
+        ]);
+        PackageCollectionItem::factory()->for($collection, 'collection')->for($secondPackage, 'package')->create([
+            'notes' => null,
+            'position' => 1,
+        ]);
+
+        $this->post(route('package-collections.import', $collection))
+            ->assertRedirect(route('builder.packages'))
+            ->assertSessionHas('status', 'package-collection-imported');
+
+        $loadout = Loadout::query()->firstOrFail();
+
+        $this->assertDatabaseHas('loadout_packages', [
+            'loadout_id' => $loadout->id,
+            'package_id' => $firstPackage->id,
+            'notes' => 'Queue dashboard setup.',
+        ]);
+        $this->assertDatabaseHas('loadout_packages', [
+            'loadout_id' => $loadout->id,
+            'package_id' => $secondPackage->id,
+        ]);
+        $this->assertSame(5, $firstPackage->refresh()->usage_count);
+        $this->assertSame(10, $secondPackage->refresh()->usage_count);
+    }
+
+    public function test_importing_collection_does_not_duplicate_or_overwrite_existing_package_notes(): void
+    {
+        $this->get(route('builder.packages'))->assertOk();
+
+        $loadout = Loadout::query()->firstOrFail();
+        $package = Package::factory()->create(['usage_count' => 2]);
+        $selection = LoadoutPackage::factory()->for($loadout)->for($package)->create([
+            'notes' => 'Keep my custom notes.',
+        ]);
+        $collection = PackageCollection::factory()->public()->create();
+        PackageCollectionItem::factory()->for($collection, 'collection')->for($package, 'package')->create([
+            'notes' => 'Collection notes should not win.',
+        ]);
+
+        $this->post(route('package-collections.import', $collection))
+            ->assertRedirect(route('builder.packages'));
+
+        $this->assertSame(1, LoadoutPackage::query()->whereBelongsTo($loadout)->where('package_id', $package->id)->count());
+        $this->assertSame('Keep my custom notes.', $selection->refresh()->notes);
+        $this->assertSame(2, $package->refresh()->usage_count);
+    }
+
+    public function test_private_collection_import_is_owner_only(): void
+    {
+        $owner = User::factory()->create();
+        $collection = PackageCollection::factory()->for($owner)->create();
+        $package = Package::factory()->create();
+        PackageCollectionItem::factory()->for($collection, 'collection')->for($package, 'package')->create();
+
+        $this->post(route('package-collections.import', $collection))
+            ->assertNotFound();
+
+        $this->actingAs($owner)
+            ->post(route('package-collections.import', $collection))
+            ->assertRedirect(route('builder.packages'));
+
+        $this->assertDatabaseHas('loadout_packages', [
             'package_id' => $package->id,
         ]);
     }
