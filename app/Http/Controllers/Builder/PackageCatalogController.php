@@ -52,7 +52,9 @@ class PackageCatalogController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->orderBy('name')
-                ->get(['name', 'slug']),
+                ->get(['name', 'slug'])
+                ->values()
+                ->all(),
             'loadout' => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
@@ -63,11 +65,15 @@ class PackageCatalogController extends Controller
                 'selected_packages' => $loadout->packages()
                     ->whereNotNull('package_id')
                     ->orderBy('position')
-                    ->get(['id', 'display_name', 'composer_name', 'install_options', 'notes']),
+                    ->get(['id', 'display_name', 'composer_name', 'install_options', 'notes'])
+                    ->values()
+                    ->all(),
                 'custom_packages' => $loadout->packages()
                     ->where('is_custom', true)
                     ->orderBy('position')
-                    ->get(['id', 'display_name', 'composer_name', 'source_url']),
+                    ->get(['id', 'display_name', 'composer_name', 'source_url'])
+                    ->values()
+                    ->all(),
             ],
             'recommendations' => $advisor->recommendations($loadout),
             'filters' => $request->filters(),

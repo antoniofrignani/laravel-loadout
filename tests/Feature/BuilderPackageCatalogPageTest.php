@@ -84,6 +84,30 @@ class BuilderPackageCatalogPageTest extends TestCase
             );
     }
 
+    public function test_builder_package_catalog_page_normalizes_nullable_package_metadata(): void
+    {
+        $this->withoutVite();
+
+        Package::factory()->create([
+            'name' => 'Minimal Package',
+            'composer_name' => 'vendor/minimal-package',
+            'tags' => null,
+            'required_services' => null,
+        ]);
+
+        $this->get(route('builder.packages'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('builder/packages')
+                ->where('packages.data.0.tags', [])
+                ->where('packages.data.0.required_services', [])
+                ->where('packages.data.0.compatibility_warnings', [])
+                ->where('loadout.selected_package_ids', [])
+                ->where('loadout.selected_packages', [])
+                ->where('loadout.custom_packages', []),
+            );
+    }
+
     public function test_builder_package_catalog_page_shows_recommendations_and_service_warnings(): void
     {
         $this->withoutVite();

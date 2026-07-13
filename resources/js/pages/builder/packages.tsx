@@ -145,11 +145,23 @@ export default function BuilderPackages({
     recommendations,
     filters,
 }: Props) {
-    const [search, setSearch] = useState(filters.search ?? '');
-    const [category, setCategory] = useState(selectedValue(filters.category));
-    const [type, setType] = useState(selectedValue(filters.type));
-    const [service, setService] = useState(filters.service ?? '');
-    const [sort, setSort] = useState(selectedValue(filters.sort, 'relevance'));
+    const catalogPackages = packages?.data ?? [];
+    const paginationLinks = packages?.links ?? [];
+    const packageCategories = categories ?? [];
+    const selectedPackageIds = loadout?.selected_package_ids ?? [];
+    const selectedPackages = loadout?.selected_packages ?? [];
+    const customPackages = loadout?.custom_packages ?? [];
+    const packageRecommendations = recommendations ?? [];
+    const activeFilters = filters ?? {};
+    const [search, setSearch] = useState(activeFilters.search ?? '');
+    const [category, setCategory] = useState(
+        selectedValue(activeFilters.category),
+    );
+    const [type, setType] = useState(selectedValue(activeFilters.type));
+    const [service, setService] = useState(activeFilters.service ?? '');
+    const [sort, setSort] = useState(
+        selectedValue(activeFilters.sort, 'relevance'),
+    );
     const [customPackageUrl, setCustomPackageUrl] = useState('');
 
     function applyFilters(event: FormEvent<HTMLFormElement>) {
@@ -193,7 +205,7 @@ export default function BuilderPackages({
                         </div>
                         <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm">
                             <PackagePlus className="size-4 text-muted-foreground" />
-                            <span>{packages.total} packages indexed</span>
+                            <span>{packages?.total ?? 0} packages indexed</span>
                         </div>
                     </div>
                 </header>
@@ -243,7 +255,7 @@ export default function BuilderPackages({
                                             <SelectItem value="all">
                                                 All categories
                                             </SelectItem>
-                                            {categories.map((category) => (
+                                            {packageCategories.map((category) => (
                                                 <SelectItem
                                                     key={category.slug}
                                                     value={category.slug}
@@ -373,9 +385,9 @@ export default function BuilderPackages({
                                     </>
                                 )}
                             </Form>
-                            {loadout.custom_packages.length > 0 && (
+                            {customPackages.length > 0 && (
                                 <div className="mt-4 flex flex-col gap-2 border-t pt-4">
-                                    {loadout.custom_packages.map((pkg) => (
+                                    {customPackages.map((pkg) => (
                                         <div
                                             key={pkg.id}
                                             className="rounded-md bg-muted px-3 py-2 text-sm"
@@ -394,9 +406,9 @@ export default function BuilderPackages({
                     </Card>
                 </section>
 
-                {loadout.selected_packages.length > 0 && (
+                {selectedPackages.length > 0 && (
                     <section className="grid gap-3 lg:grid-cols-2">
-                        {loadout.selected_packages.map((selectedPackage) => (
+                        {selectedPackages.map((selectedPackage) => (
                             <Card
                                 key={selectedPackage.id}
                                 className="rounded-lg"
@@ -486,9 +498,9 @@ export default function BuilderPackages({
                     </section>
                 )}
 
-                {recommendations.length > 0 && (
+                {packageRecommendations.length > 0 && (
                     <section className="grid gap-3 md:grid-cols-3">
-                        {recommendations.map((recommendation) => (
+                        {packageRecommendations.map((recommendation) => (
                             <Card
                                 key={recommendation.composer_name}
                                 className="rounded-lg border-dashed"
@@ -510,7 +522,7 @@ export default function BuilderPackages({
                 )}
 
                 <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {packages.data.map((catalogPackage) => (
+                    {catalogPackages.map((catalogPackage) => (
                         <Card
                             key={catalogPackage.id}
                             className="rounded-lg py-5"
@@ -546,7 +558,7 @@ export default function BuilderPackages({
                                     {catalogPackage.is_official && (
                                         <Badge>Official</Badge>
                                     )}
-                                    {catalogPackage.required_services.map(
+                                    {(catalogPackage.required_services ?? []).map(
                                         (service) => (
                                             <Badge
                                                 key={service}
@@ -572,10 +584,10 @@ export default function BuilderPackages({
                                             'Pending'}
                                     </div>
                                 </div>
-                                {catalogPackage.compatibility_warnings.length >
+                                {(catalogPackage.compatibility_warnings ?? []).length >
                                     0 && (
                                     <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                                        {catalogPackage.compatibility_warnings.map(
+                                        {(catalogPackage.compatibility_warnings ?? []).map(
                                             (warning) => (
                                                 <p key={warning}>{warning}</p>
                                             ),
@@ -585,7 +597,7 @@ export default function BuilderPackages({
                                 <Form {...storeLoadoutPackage.form()}>
                                     {({ processing }) => {
                                         const selected =
-                                            loadout.selected_package_ids.includes(
+                                            selectedPackageIds.includes(
                                                 catalogPackage.id,
                                             );
 
@@ -621,7 +633,7 @@ export default function BuilderPackages({
                     ))}
                 </section>
 
-                {packages.data.length === 0 && (
+                {catalogPackages.length === 0 && (
                     <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
                         No packages match the current filters.
                     </div>
@@ -629,11 +641,11 @@ export default function BuilderPackages({
 
                 <footer className="flex flex-col justify-between gap-3 border-t pt-4 text-sm text-muted-foreground md:flex-row md:items-center">
                     <span>
-                        Showing {packages.from ?? 0}-{packages.to ?? 0} of{' '}
-                        {packages.total}
+                        Showing {packages?.from ?? 0}-{packages?.to ?? 0} of{' '}
+                        {packages?.total ?? 0}
                     </span>
                     <div className="flex flex-wrap gap-2">
-                        {packages.links.map((link) => (
+                        {paginationLinks.map((link) => (
                             <Button
                                 key={`${link.label}-${link.url}`}
                                 asChild={Boolean(link.url)}
