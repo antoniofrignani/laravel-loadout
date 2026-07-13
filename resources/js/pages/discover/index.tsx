@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { discover, home } from '@/routes';
 import { project } from '@/routes/builder';
 import { clone, show } from '@/routes/loadouts';
+import { show as showProfile } from '@/routes/profiles';
 
 type DiscoveryLoadout = {
     id: number;
@@ -21,6 +22,7 @@ type DiscoveryLoadout = {
     slug: string;
     description: string | null;
     author_name: string | null;
+    author_profile_slug: string | null;
     packages_count: number;
     star_count: number;
     clone_count: number;
@@ -208,11 +210,22 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                         </div>
 
                                         <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-                                            <span>
-                                                By{' '}
-                                                {loadout.author_name ??
-                                                    'Anonymous builder'}
-                                            </span>
+                                            {loadout.author_profile_slug ? (
+                                                <Link
+                                                    href={showProfile.url(
+                                                        loadout.author_profile_slug,
+                                                    )}
+                                                    className="underline-offset-4 hover:text-foreground hover:underline"
+                                                >
+                                                    By {loadout.author_name}
+                                                </Link>
+                                            ) : (
+                                                <span>
+                                                    By{' '}
+                                                    {loadout.author_name ??
+                                                        'Anonymous builder'}
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">

@@ -30,7 +30,7 @@ class LoadoutDiscoveryController extends Controller
                 'published_at',
                 'updated_at',
             ])
-            ->with('user:id,name')
+            ->with('user:id,name,profile_slug')
             ->withCount('packages')
             ->where('visibility', LoadoutVisibility::Public)
             ->whereNotNull('published_at');
@@ -59,6 +59,7 @@ class LoadoutDiscoveryController extends Controller
                 'slug' => $loadout->slug,
                 'description' => $loadout->description,
                 'author_name' => $loadout->user?->name,
+                'author_profile_slug' => $loadout->user?->profile_slug,
                 'packages_count' => (int) $loadout->getAttribute('packages_count'),
                 'star_count' => $loadout->star_count,
                 'clone_count' => $loadout->clone_count,

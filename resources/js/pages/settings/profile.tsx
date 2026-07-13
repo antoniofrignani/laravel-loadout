@@ -7,6 +7,8 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { show as showProfile } from '@/routes/profiles';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { Auth } from '@/types';
@@ -34,7 +36,7 @@ export default function Profile({
                 <Heading
                     variant="small"
                     title="Profile"
-                    description="Update your name and email address"
+                    description="Update your account and public curator profile"
                 />
 
                 <Form
@@ -82,6 +84,60 @@ export default function Profile({
                                 <InputError
                                     className="mt-2"
                                     message={errors.email}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="profile_slug">
+                                    Public profile URL
+                                </Label>
+
+                                <div className="flex rounded-md border border-input bg-transparent shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+                                    <span className="flex items-center border-r px-3 text-sm text-muted-foreground">
+                                        /u/
+                                    </span>
+                                    <Input
+                                        id="profile_slug"
+                                        className="border-0 shadow-none focus-visible:ring-0"
+                                        defaultValue={
+                                            auth.user.profile_slug ?? ''
+                                        }
+                                        name="profile_slug"
+                                        required
+                                        placeholder="your-name"
+                                    />
+                                </div>
+
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.profile_slug}
+                                />
+
+                                {auth.user.profile_slug && (
+                                    <Link
+                                        href={showProfile.url(
+                                            auth.user.profile_slug,
+                                        )}
+                                        className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                    >
+                                        View public profile
+                                    </Link>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="profile_bio">Public bio</Label>
+
+                                <Textarea
+                                    id="profile_bio"
+                                    name="profile_bio"
+                                    defaultValue={auth.user.profile_bio ?? ''}
+                                    placeholder="What kind of Laravel stacks do you curate?"
+                                />
+
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.profile_bio}
                                 />
                             </div>
 
