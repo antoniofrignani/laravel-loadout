@@ -145,6 +145,8 @@ export default function BuilderPackages({
     recommendations,
     filters,
 }: Props) {
+    'use no memo';
+
     const catalogPackages = packages?.data ?? [];
     const paginationLinks = packages?.links ?? [];
     const packageCategories = categories ?? [];
