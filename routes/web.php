@@ -11,6 +11,8 @@ use App\Http\Controllers\Builder\RuntimeController;
 use App\Http\Controllers\Builder\StarterKitController;
 use App\Http\Controllers\LoadoutCloneController;
 use App\Http\Controllers\LoadoutDownloadController;
+use App\Http\Controllers\LoadoutLibraryController;
+use App\Http\Controllers\LoadoutResumeController;
 use App\Http\Controllers\LoadoutShowController;
 use App\Http\Controllers\PackageSuggestionModerationController;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +43,8 @@ Route::get('package-suggestions/{package_suggestion}/ignore', [PackageSuggestion
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('loadouts', LoadoutLibraryController::class)->name('loadouts.index');
+    Route::post('loadouts/{loadout:slug}/resume', LoadoutResumeController::class)->name('loadouts.resume');
 });
 
 require __DIR__.'/settings.php';
