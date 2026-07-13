@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Boxes, FolderGit2, LayoutGrid, PackagePlus, Search } from 'lucide-react';
+import { Boxes, PackagePlus, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -13,17 +12,12 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, discover } from '@/routes';
+import { discover } from '@/routes';
 import { index as loadoutsIndex } from '@/routes/loadouts';
 import { index as packageCollectionsIndex } from '@/routes/package-collections';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
     {
         title: 'My Loadouts',
         href: loadoutsIndex(),
@@ -41,19 +35,6 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -61,7 +42,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={loadoutsIndex()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -74,7 +55,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

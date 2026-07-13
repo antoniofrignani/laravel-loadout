@@ -53,7 +53,6 @@ Route::get('package-suggestions/{package_suggestion}/ignore', [PackageSuggestion
     ->name('package-suggestions.ignore');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
     Route::get('package-collections', [PackageCollectionController::class, 'index'])->name('package-collections.index');
     Route::post('package-collections', [PackageCollectionController::class, 'store'])->name('package-collections.store');
     Route::post('package-collections/{package_collection:slug}/items', [PackageCollectionItemController::class, 'store'])->name('package-collections.items.store');

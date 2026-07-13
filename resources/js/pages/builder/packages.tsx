@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
+    ArrowLeft,
+    ArrowRight,
     Download,
     PackagePlus,
     Plus,
@@ -32,7 +34,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { packages as builderPackages } from '@/routes/builder';
+import {
+    packages as builderPackages,
+    review as builderReview,
+    runtime as builderRuntime,
+} from '@/routes/builder';
 
 type Category = {
     name: string;
@@ -214,9 +220,25 @@ export default function BuilderPackages({
                                 loadout-only custom additions.
                             </p>
                         </div>
-                        <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm">
-                            <PackagePlus className="size-4 text-muted-foreground" />
-                            <span>{packages?.total ?? 0} packages indexed</span>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm">
+                                <PackagePlus className="size-4 text-muted-foreground" />
+                                <span>
+                                    {packages?.total ?? 0} packages indexed
+                                </span>
+                            </div>
+                            <Button asChild variant="outline">
+                                <Link href={builderRuntime.url()}>
+                                    <ArrowLeft className="size-4" />
+                                    Back to runtime
+                                </Link>
+                            </Button>
+                            <Button asChild>
+                                <Link href={builderReview.url()}>
+                                    Review
+                                    <ArrowRight className="size-4" />
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 </header>
@@ -734,6 +756,10 @@ BuilderPackages.layout = {
         {
             title: 'Builder',
             href: builderPackages.url(),
+        },
+        {
+            title: 'Runtime',
+            href: builderRuntime.url(),
         },
         {
             title: 'Packages',
