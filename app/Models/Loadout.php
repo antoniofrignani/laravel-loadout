@@ -20,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $slug
  * @property LoadoutVisibility $visibility
  * @property int $current_step
+ * @property string|null $description
+ * @property array<string, mixed>|null $builder_state
+ * @property array<string, mixed>|null $generation_snapshot
  * @property int $star_count
  * @property int $clone_count
  * @property CarbonInterface|null $published_at
