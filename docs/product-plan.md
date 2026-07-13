@@ -345,3 +345,13 @@ This is the core value of the product and should be treated as a first-class sea
 11. Implement save, public share slug pages, duplicate/fork, and lean zip archive download.
 12. Add tests for step validation, package filtering, custom suggestions, stat snapshots, moderation links, slug uniqueness, artifact generation, archive contents, and visibility.
 13. Phase 2: add user profiles, private/unlisted/public visibility controls, cloned loadout attribution, collaboration roles, stars, public gallery ranking, and user package collections.
+
+## Implementation Status
+
+- Completed: project scaffold with Laravel 13, Inertia, React, shadcn/ui, Fortify auth, Sail, Yarn, and Laravel Boost.
+- Completed: product plan for the builder, catalog, custom package moderation, generated zip output, and Phase 2 account/community features.
+- Completed: domain foundation for loadouts, package categories, curated packages, stat snapshots, package suggestions, selected loadout packages, step answers, generated artifacts, factories, and initial package catalog seeding.
+- Completed: Sail/MySQL migrations and `PackageCatalogSeeder` applied locally.
+- Completed: package catalog query layer for server-side search, filters, sorting, and pagination.
+- Completed: backend verification with `vendor/bin/sail composer test`.
+- Next: expose the package catalog query layer through the builder package-selection route and Inertia page.
