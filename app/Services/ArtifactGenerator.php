@@ -31,7 +31,7 @@ class ArtifactGenerator
             [
                 'name' => 'compose.yaml',
                 'language' => 'yaml',
-                'content' => $this->composeYaml($packages),
+                'content' => $this->composeYaml($loadout, $packages),
             ],
             [
                 'name' => '.env.loadout',
@@ -91,6 +91,25 @@ class ArtifactGenerator
 
     private function packageJson(Loadout $loadout): string
     {
+        $frontendStack = $this->builderValue($loadout, 'starter.frontend_stack', 'react-inertia');
+        $dependencies = [
+            'vite' => '^8.0.0',
+            'typescript' => '^5.9.0',
+        ];
+
+        if ($frontendStack === 'react-inertia') {
+            $dependencies['@inertiajs/react'] = '^3.0.0';
+            $dependencies['@vitejs/plugin-react'] = '^5.0.0';
+            $dependencies['react'] = '^19.0.0';
+            $dependencies['react-dom'] = '^19.0.0';
+        }
+
+        if ($frontendStack === 'vue-inertia') {
+            $dependencies['@inertiajs/vue3'] = '^3.0.0';
+            $dependencies['@vitejs/plugin-vue'] = '^6.0.0';
+            $dependencies['vue'] = '^3.5.0';
+        }
+
         return $this->prettyJson([
             'private' => true,
             'type' => 'module',
@@ -98,12 +117,7 @@ class ArtifactGenerator
                 'build' => 'vite build',
                 'dev' => 'vite --host 0.0.0.0',
             ],
-            'dependencies' => [
-                '@inertiajs/react' => '^3.0.0',
-                '@vitejs/plugin-react' => '^5.0.0',
-                'vite' => '^8.0.0',
-                'typescript' => '^5.9.0',
-            ],
+            'dependencies' => $dependencies,
             'devDependencies' => [
                 'tailwindcss' => '^4.0.0',
             ],
@@ -114,9 +128,29 @@ class ArtifactGenerator
     /**
      * @param  Collection<int, LoadoutPackage>  $packages
      */
-    private function composeYaml(Collection $packages): string
+    private function composeYaml(Loadout $loadout, Collection $packages): string
     {
         $services = $this->requiredServices($packages);
+        $database = $this->builderValue($loadout, 'runtime.database', 'mysql');
+        $mail = $this->builderValue($loadout, 'runtime.mail', 'mailpit');
+
+        if ($this->builderValue($loadout, 'runtime.cache', 'database') === 'redis') {
+            $services[] = 'redis';
+        }
+
+        if ($this->builderValue($loadout, 'runtime.queue', 'database') === 'redis') {
+            $services[] = 'redis';
+        }
+
+        if ($this->builderValue($loadout, 'runtime.search', 'none') === 'meilisearch') {
+            $services[] = 'meilisearch';
+        }
+
+        if ($mail === 'mailpit') {
+            $services[] = 'mailpit';
+        }
+
+        $services = array_values(array_unique($services));
 
         $yaml = [
             'services:',
@@ -131,6 +165,33 @@ class ArtifactGenerator
             '    volumes:',
             '      - ".:/var/www/html"',
         ];
+
+        if ($database === 'mysql') {
+            $yaml = array_merge($yaml, [
+                '  mysql:',
+                '    image: "mysql:8.4"',
+                '    ports:',
+                '      - "${FORWARD_DB_PORT:-3306}:3306"',
+                '    environment:',
+                '      MYSQL_DATABASE: "${DB_DATABASE}"',
+                '      MYSQL_USER: "${DB_USERNAME}"',
+                '      MYSQL_PASSWORD: "${DB_PASSWORD}"',
+                '      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"',
+            ]);
+        }
+
+        if ($database === 'pgsql') {
+            $yaml = array_merge($yaml, [
+                '  pgsql:',
+                '    image: "postgres:17"',
+                '    ports:',
+                '      - "${FORWARD_DB_PORT:-5432}:5432"',
+                '    environment:',
+                '      POSTGRES_DB: "${DB_DATABASE}"',
+                '      POSTGRES_USER: "${DB_USERNAME}"',
+                '      POSTGRES_PASSWORD: "${DB_PASSWORD}"',
+            ]);
+        }
 
         if (in_array('redis', $services, true)) {
             $yaml = array_merge($yaml, [
@@ -147,6 +208,16 @@ class ArtifactGenerator
                 '    image: "getmeili/meilisearch:latest"',
                 '    ports:',
                 '      - "${FORWARD_MEILISEARCH_PORT:-7700}:7700"',
+            ]);
+        }
+
+        if (in_array('mailpit', $services, true)) {
+            $yaml = array_merge($yaml, [
+                '  mailpit:',
+                '    image: "axllent/mailpit:latest"',
+                '    ports:',
+                '      - "${FORWARD_MAILPIT_PORT:-1025}:1025"',
+                '      - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"',
             ]);
         }
 
@@ -181,6 +252,8 @@ class ArtifactGenerator
     private function envLoadout(Loadout $loadout): string
     {
         $appName = $this->builderValue($loadout, 'project.app_name', $loadout->title);
+        $database = $this->builderValue($loadout, 'runtime.database', 'mysql');
+        $mail = $this->builderValue($loadout, 'runtime.mail', 'mailpit');
 
         return implode("\n", [
             'APP_NAME="'.$appName.'"',
@@ -189,18 +262,21 @@ class ArtifactGenerator
             'APP_DEBUG=true',
             'APP_URL=http://localhost',
             '',
-            'DB_CONNECTION=mysql',
-            'DB_HOST=mysql',
-            'DB_PORT=3306',
+            'DB_CONNECTION='.$database,
+            'DB_HOST='.$this->databaseHost($database),
+            'DB_PORT='.$this->databasePort($database),
             'DB_DATABASE=laravel',
             'DB_USERNAME=sail',
             'DB_PASSWORD=password',
             '',
-            'CACHE_STORE=database',
-            'QUEUE_CONNECTION=database',
+            'CACHE_STORE='.$this->builderValue($loadout, 'runtime.cache', 'database'),
+            'QUEUE_CONNECTION='.$this->builderValue($loadout, 'runtime.queue', 'database'),
             'SESSION_DRIVER=database',
             '',
-            'MAIL_MAILER=log',
+            'MAIL_MAILER='.$this->mailMailer($mail),
+            'MAIL_HOST='.$this->mailHost($mail),
+            'MAIL_PORT='.$this->mailPort($mail),
+            'SCOUT_DRIVER='.$this->searchDriver($loadout),
         ])."\n";
     }
 
@@ -224,6 +300,12 @@ class ArtifactGenerator
             '',
             '- Laravel '.$this->builderValue($loadout, 'project.laravel_version', '13.x'),
             '- PHP '.$this->builderValue($loadout, 'project.php_version', '8.4'),
+            '- Frontend: '.$this->label($this->builderValue($loadout, 'starter.frontend_stack', 'react-inertia')),
+            '- Authentication: '.$this->label($this->builderValue($loadout, 'starter.authentication', 'laravel-auth')),
+            '- Runtime: '.$this->label($this->builderValue($loadout, 'runtime.local_runtime', 'sail')),
+            '- Database: '.$this->label($this->builderValue($loadout, 'runtime.database', 'mysql')),
+            '- Cache: '.$this->label($this->builderValue($loadout, 'runtime.cache', 'database')),
+            '- Queue: '.$this->label($this->builderValue($loadout, 'runtime.queue', 'database')),
             '- Yarn package manager',
             '',
             '## Selected Packages',
@@ -248,6 +330,57 @@ class ArtifactGenerator
         $value = data_get($loadout->builder_state, $key);
 
         return is_string($value) && $value !== '' ? $value : $default;
+    }
+
+    private function databaseHost(string $database): string
+    {
+        return match ($database) {
+            'pgsql' => 'pgsql',
+            'sqlite' => 'database/database.sqlite',
+            default => 'mysql',
+        };
+    }
+
+    private function databasePort(string $database): string
+    {
+        return match ($database) {
+            'pgsql' => '5432',
+            'sqlite' => '',
+            default => '3306',
+        };
+    }
+
+    private function mailMailer(string $mail): string
+    {
+        return $mail === 'smtp' ? 'smtp' : $mail;
+    }
+
+    private function mailHost(string $mail): string
+    {
+        return match ($mail) {
+            'mailpit' => 'mailpit',
+            'smtp' => 'smtp.example.com',
+            default => '',
+        };
+    }
+
+    private function mailPort(string $mail): string
+    {
+        return match ($mail) {
+            'mailpit' => '1025',
+            'smtp' => '587',
+            default => '',
+        };
+    }
+
+    private function searchDriver(Loadout $loadout): string
+    {
+        return $this->builderValue($loadout, 'runtime.search', 'none') === 'meilisearch' ? 'meilisearch' : 'collection';
+    }
+
+    private function label(string $value): string
+    {
+        return str($value)->replace('-', ' ')->headline()->toString();
     }
 
     /**

@@ -43,7 +43,7 @@ class BuilderProjectBasicsTest extends TestCase
                 'laravel_version' => '13.x',
                 'package_manager' => 'yarn',
             ])
-            ->assertRedirect(route('builder.packages'));
+            ->assertRedirect(route('builder.starter'));
 
         $loadout = Loadout::query()->firstOrFail();
 

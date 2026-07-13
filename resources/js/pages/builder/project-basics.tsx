@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { packages as builderPackages, project as builderProject } from '@/routes/builder';
+import { project as builderProject, starter as builderStarter } from '@/routes/builder';
 
 type Values = {
     project_name: string;
@@ -198,9 +198,9 @@ export default function ProjectBasics({ values }: Props) {
                                             </Button>
                                             <Button asChild variant="outline">
                                                 <Link
-                                                    href={builderPackages.url()}
+                                                    href={builderStarter.url()}
                                                 >
-                                                    Skip to packages
+                                                    Skip to starter
                                                 </Link>
                                             </Button>
                                         </div>

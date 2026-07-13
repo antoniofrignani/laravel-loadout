@@ -47,7 +47,7 @@ class ProjectBasicsController extends Controller
         ])->save();
 
         return redirect()
-            ->route('builder.packages')
+            ->route('builder.starter')
             ->with('status', 'project-basics-saved');
     }
 }
