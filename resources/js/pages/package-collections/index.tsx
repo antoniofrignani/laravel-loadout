@@ -12,6 +12,13 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
     index as collectionsIndex,
@@ -105,19 +112,25 @@ export default function PackageCollectionIndex({ collections }: Props) {
                                             <Label htmlFor="visibility">
                                                 Visibility
                                             </Label>
-                                            <select
-                                                id="visibility"
+                                            <Select
                                                 name="visibility"
                                                 defaultValue="private"
-                                                className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                             >
-                                                <option value="private">
-                                                    Private
-                                                </option>
-                                                <option value="public">
-                                                    Public
-                                                </option>
-                                            </select>
+                                                <SelectTrigger
+                                                    id="visibility"
+                                                    className="w-full"
+                                                >
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="private">
+                                                        Private
+                                                    </SelectItem>
+                                                    <SelectItem value="public">
+                                                        Public
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             {errors.visibility && (
                                                 <p className="text-sm text-destructive">
                                                     {errors.visibility}

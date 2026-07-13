@@ -10,6 +10,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { show as showProfile } from '@/routes/profiles';
 import {
@@ -141,29 +148,34 @@ export default function PackageCollectionShow({
                                         {({ errors, processing }) => (
                                             <>
                                                 <div className="grid gap-2">
-                                                    <select
+                                                    <Select
                                                         name="package_id"
-                                                        className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                                     >
-                                                        <option value="">
-                                                            Choose package
-                                                        </option>
-                                                        {available_packages.map(
-                                                            (pkg) => (
-                                                                <option
-                                                                    key={pkg.id}
-                                                                    value={
-                                                                        pkg.id
-                                                                    }
-                                                                >
-                                                                    {pkg.name}{' '}
-                                                                    {pkg.composer_name
-                                                                        ? `(${pkg.composer_name})`
-                                                                        : ''}
-                                                                </option>
-                                                            ),
-                                                        )}
-                                                    </select>
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue placeholder="Choose package" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {available_packages.map(
+                                                                (pkg) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            pkg.id
+                                                                        }
+                                                                        value={String(
+                                                                            pkg.id,
+                                                                        )}
+                                                                    >
+                                                                        {
+                                                                            pkg.name
+                                                                        }{' '}
+                                                                        {pkg.composer_name
+                                                                            ? `(${pkg.composer_name})`
+                                                                            : ''}
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
                                                     {errors.package_id && (
                                                         <p className="text-sm text-destructive">
                                                             {errors.package_id}
