@@ -30,7 +30,7 @@ class CurationProfileTest extends TestCase
             'visibility' => LoadoutVisibility::Public,
             'star_count' => 8,
             'clone_count' => 3,
-            'published_at' => now(),
+            'published_at' => now()->subDays(2),
         ]);
         LoadoutPackage::factory()->for($publicLoadout)->count(2)->create();
         Loadout::factory()->for($user)->create([
@@ -41,6 +41,7 @@ class CurationProfileTest extends TestCase
         $publicCollection = PackageCollection::factory()->for($user)->public()->create([
             'title' => 'Backend Picks',
             'slug' => 'backend-picks',
+            'updated_at' => now()->subDay(),
         ]);
         PackageCollectionItem::factory()->for($publicCollection, 'collection')->count(2)->create();
         PackageCollection::factory()->for($user)->create([
@@ -61,6 +62,15 @@ class CurationProfileTest extends TestCase
                 ->has('collections', 1)
                 ->where('collections.0.title', 'Backend Picks')
                 ->where('collections.0.items_count', 2)
+                ->has('activity', 2)
+                ->where('activity.0.type', 'collection')
+                ->where('activity.0.title', 'Backend Picks')
+                ->where('activity.0.metric_label', 'packages')
+                ->where('activity.0.metric_value', 2)
+                ->where('activity.1.type', 'loadout')
+                ->where('activity.1.title', 'SaaS Starter')
+                ->where('activity.1.metric_label', 'stars')
+                ->where('activity.1.metric_value', 8)
                 ->where('stats.public_loadouts', 1)
                 ->where('stats.public_collections', 1)
                 ->where('stats.total_stars', 8)

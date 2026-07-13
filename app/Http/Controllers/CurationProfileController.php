@@ -13,7 +13,7 @@ class CurationProfileController extends Controller
 {
     public function __invoke(User $user): Response
     {
-        $loadouts = Loadout::query()
+        $publicLoadouts = Loadout::query()
             ->whereBelongsTo($user)
             ->where('visibility', LoadoutVisibility::Public)
             ->whereNotNull('published_at')
@@ -21,7 +21,9 @@ class CurationProfileController extends Controller
             ->orderByDesc('star_count')
             ->orderByDesc('clone_count')
             ->latest('published_at')
-            ->get()
+            ->get();
+
+        $loadouts = $publicLoadouts
             ->map(fn (Loadout $loadout): array => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
@@ -33,12 +35,14 @@ class CurationProfileController extends Controller
                 'published_at' => $loadout->published_at?->toFormattedDateString(),
             ]);
 
-        $collections = PackageCollection::query()
+        $publicCollections = PackageCollection::query()
             ->whereBelongsTo($user)
             ->where('visibility', 'public')
             ->withCount('items')
             ->latest()
-            ->get()
+            ->get();
+
+        $collections = $publicCollections
             ->map(fn (PackageCollection $collection): array => [
                 'id' => $collection->id,
                 'title' => $collection->title,
@@ -56,6 +60,7 @@ class CurationProfileController extends Controller
             ],
             'loadouts' => $loadouts,
             'collections' => $collections,
+            'activity' => $this->activity($publicLoadouts->all(), $publicCollections->all()),
             'stats' => [
                 'public_loadouts' => $loadouts->count(),
                 'public_collections' => $collections->count(),
@@ -63,5 +68,49 @@ class CurationProfileController extends Controller
                 'total_clones' => $loadouts->sum('clone_count'),
             ],
         ]);
+    }
+
+    /**
+     * @param  array<int, Loadout>  $loadouts
+     * @param  array<int, PackageCollection>  $collections
+     * @return array<int, array{type: string, title: string, slug: string, description: string|null, occurred_at: string|null, metric_label: string, metric_value: int}>
+     */
+    private function activity(array $loadouts, array $collections): array
+    {
+        $activity = [];
+
+        foreach ($loadouts as $loadout) {
+            $activity[] = [
+                'type' => 'loadout',
+                'title' => $loadout->title,
+                'slug' => $loadout->slug,
+                'description' => $loadout->description,
+                'occurred_at' => $loadout->published_at?->toFormattedDateString(),
+                'occurred_at_sort' => $loadout->published_at?->getTimestamp() ?? 0,
+                'metric_label' => 'stars',
+                'metric_value' => $loadout->star_count,
+            ];
+        }
+
+        foreach ($collections as $collection) {
+            $activity[] = [
+                'type' => 'collection',
+                'title' => $collection->title,
+                'slug' => $collection->slug,
+                'description' => $collection->description,
+                'occurred_at' => $collection->updated_at?->toFormattedDateString(),
+                'occurred_at_sort' => $collection->updated_at?->getTimestamp() ?? 0,
+                'metric_label' => 'packages',
+                'metric_value' => (int) $collection->getAttribute('items_count'),
+            ];
+        }
+
+        usort($activity, fn (array $a, array $b): int => $b['occurred_at_sort'] <=> $a['occurred_at_sort']);
+
+        return array_map(function (array $item): array {
+            unset($item['occurred_at_sort']);
+
+            return $item;
+        }, array_slice($activity, 0, 8));
     }
 }

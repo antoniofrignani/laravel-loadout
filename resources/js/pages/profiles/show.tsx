@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Boxes, GitFork, PackageCheck, Sparkles, Star } from 'lucide-react';
+import { Boxes, GitFork, PackageCheck, Sparkles, Star, Zap } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,10 +41,21 @@ type PublicCollection = {
     items_count: number;
 };
 
+type ActivityItem = {
+    type: 'loadout' | 'collection';
+    title: string;
+    slug: string;
+    description: string | null;
+    occurred_at: string | null;
+    metric_label: string;
+    metric_value: number;
+};
+
 type Props = {
     profile: Profile;
     loadouts: PublicLoadout[];
     collections: PublicCollection[];
+    activity: ActivityItem[];
     stats: {
         public_loadouts: number;
         public_collections: number;
@@ -57,6 +68,7 @@ export default function ProfileShow({
     profile,
     loadouts,
     collections,
+    activity,
     stats,
 }: Props) {
     return (
@@ -129,6 +141,30 @@ export default function ProfileShow({
                             </div>
                         </div>
                     </header>
+
+                    {activity.length > 0 && (
+                        <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+                            <Card className="rounded-2xl bg-muted/40">
+                                <CardHeader>
+                                    <Badge variant="secondary" className="w-fit">
+                                        Recent activity
+                                    </Badge>
+                                    <CardTitle className="text-3xl">
+                                        Latest public curation work
+                                    </CardTitle>
+                                    <CardDescription>
+                                        A quick timeline of newly published
+                                        loadouts and updated package collections.
+                                    </CardDescription>
+                                </CardHeader>
+                            </Card>
+                            <div className="grid gap-3">
+                                {activity.map((item) => (
+                                    <ActivityCard key={`${item.type}-${item.slug}`} item={item} />
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {collections.length > 0 && (
                         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -244,6 +280,57 @@ export default function ProfileShow({
                 </div>
             </main>
         </>
+    );
+}
+
+function ActivityCard({ item }: { item: ActivityItem }) {
+    const href =
+        item.type === 'loadout'
+            ? showLoadout.url(item.slug)
+            : showCollection.url(item.slug);
+
+    return (
+        <Card className="rounded-2xl">
+            <CardContent className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center">
+                <div className="flex gap-4">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <Zap className="size-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline">
+                                {item.type === 'loadout'
+                                    ? 'Published loadout'
+                                    : 'Updated collection'}
+                            </Badge>
+                            {item.occurred_at && (
+                                <span className="text-xs text-muted-foreground">
+                                    {item.occurred_at}
+                                </span>
+                            )}
+                        </div>
+                        <h2 className="mt-2 text-xl font-semibold">
+                            {item.title}
+                        </h2>
+                        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                            {item.description ??
+                                'A public Laravel Loadout curation item.'}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 sm:justify-end">
+                    <div className="rounded-xl bg-muted px-3 py-2 text-sm">
+                        <span className="font-semibold">
+                            {item.metric_value}
+                        </span>{' '}
+                        {item.metric_label}
+                    </div>
+                    <Button asChild variant="outline">
+                        <Link href={href}>Open</Link>
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
 
