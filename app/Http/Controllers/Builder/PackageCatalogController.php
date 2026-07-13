@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Builder;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Builder\PackageCatalogRequest;
+use App\Models\Loadout;
 use App\Models\Package;
 use App\Models\PackageCategory;
 use App\Services\LoadoutBuilder;
@@ -21,6 +22,10 @@ class PackageCatalogController extends Controller
         PackageCompatibilityAdvisor $advisor,
     ): Response {
         $loadout = $builder->currentDraft($request->session(), $request->user());
+        $selectedPackageIds = $loadout->packages()
+            ->whereNotNull('package_id')
+            ->pluck('package_id')
+            ->all();
 
         $packages = $catalog
             ->search($request->filters())
@@ -58,10 +63,7 @@ class PackageCatalogController extends Controller
             'loadout' => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
-                'selected_package_ids' => $loadout->packages()
-                    ->whereNotNull('package_id')
-                    ->pluck('package_id')
-                    ->all(),
+                'selected_package_ids' => $selectedPackageIds,
                 'selected_packages' => $loadout->packages()
                     ->whereNotNull('package_id')
                     ->orderBy('position')
@@ -75,8 +77,35 @@ class PackageCatalogController extends Controller
                     ->values()
                     ->all(),
             ],
-            'recommendations' => $advisor->recommendations($loadout),
+            'recommendations' => $this->recommendations($advisor, $loadout, $selectedPackageIds),
             'filters' => (object) $request->filters(),
         ]);
+    }
+
+    /**
+     * @param  array<int, int>  $selectedPackageIds
+     * @return array<int, array{composer_name: string, title: string, reason: string, package_id: int|null, is_selected: bool}>
+     */
+    private function recommendations(PackageCompatibilityAdvisor $advisor, Loadout $loadout, array $selectedPackageIds): array
+    {
+        $recommendations = $advisor->recommendations($loadout);
+        $packages = Package::query()
+            ->whereIn('composer_name', collect($recommendations)->pluck('composer_name')->all())
+            ->get(['id', 'composer_name'])
+            ->keyBy('composer_name');
+
+        return collect($recommendations)
+            ->map(function (array $recommendation) use ($packages, $selectedPackageIds): array {
+                $package = $packages->get($recommendation['composer_name']);
+                $packageId = $package?->id;
+
+                return [
+                    ...$recommendation,
+                    'package_id' => $packageId,
+                    'is_selected' => $packageId !== null && in_array($packageId, $selectedPackageIds, true),
+                ];
+            })
+            ->values()
+            ->all();
     }
 }

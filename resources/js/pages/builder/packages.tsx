@@ -111,6 +111,8 @@ type Recommendation = {
     composer_name: string;
     title: string;
     reason: string;
+    package_id: number | null;
+    is_selected: boolean;
 };
 
 type Props = {
@@ -364,6 +366,7 @@ export default function BuilderPackages({
                             <Form
                                 className="flex flex-col gap-3"
                                 onSuccess={() => setCustomPackageUrl('')}
+                                options={{ preserveScroll: true }}
                                 {...storeCustomPackage.form()}
                             >
                                 {({ errors, processing }) => (
@@ -433,6 +436,7 @@ export default function BuilderPackages({
                                 <CardContent>
                                     <Form
                                         className="grid gap-3"
+                                        options={{ preserveScroll: true }}
                                         {...updateLoadoutPackage.form(
                                             selectedPackage.id,
                                         )}
@@ -522,8 +526,50 @@ export default function BuilderPackages({
                                         {recommendation.composer_name}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="text-sm text-muted-foreground">
-                                    {recommendation.reason}
+                                <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+                                    <p>{recommendation.reason}</p>
+                                    {recommendation.package_id ? (
+                                        <Form
+                                            options={{ preserveScroll: true }}
+                                            {...storeLoadoutPackage.form()}
+                                        >
+                                            {({ processing }) => (
+                                                <>
+                                                    <input
+                                                        name="package_id"
+                                                        type="hidden"
+                                                        value={
+                                                            recommendation.package_id ??
+                                                            ''
+                                                        }
+                                                    />
+                                                    <Button
+                                                        className="w-full"
+                                                        disabled={
+                                                            processing ||
+                                                            recommendation.is_selected
+                                                        }
+                                                        size="sm"
+                                                        variant={
+                                                            recommendation.is_selected
+                                                                ? 'secondary'
+                                                                : 'outline'
+                                                        }
+                                                    >
+                                                        <Plus className="size-4" />
+                                                        {recommendation.is_selected
+                                                            ? 'Selected'
+                                                            : 'Select package'}
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </Form>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">
+                                            Add this package to the curated
+                                            catalog before it can be selected.
+                                        </p>
+                                    )}
                                 </CardContent>
                             </Card>
                         ))}
@@ -603,7 +649,10 @@ export default function BuilderPackages({
                                         )}
                                     </div>
                                 )}
-                                <Form {...storeLoadoutPackage.form()}>
+                                <Form
+                                    options={{ preserveScroll: true }}
+                                    {...storeLoadoutPackage.form()}
+                                >
                                     {({ processing }) => {
                                         const selected =
                                             selectedPackageIds.includes(

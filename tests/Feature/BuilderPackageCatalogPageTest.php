@@ -115,7 +115,13 @@ class BuilderPackageCatalogPageTest extends TestCase
         $category = PackageCategory::factory()->create([
             'slug' => 'official-laravel',
         ]);
-        Package::factory()->for($category, 'category')->create([
+        $horizon = Package::factory()->for($category, 'category')->create([
+            'name' => 'Laravel Horizon',
+            'composer_name' => 'laravel/horizon',
+            'is_official' => true,
+            'required_services' => ['redis'],
+        ]);
+        $scout = Package::factory()->for($category, 'category')->create([
             'name' => 'Laravel Scout',
             'composer_name' => 'laravel/scout',
             'is_official' => true,
@@ -142,7 +148,11 @@ class BuilderPackageCatalogPageTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('recommendations', 2)
                 ->where('recommendations.0.composer_name', 'laravel/horizon')
+                ->where('recommendations.0.package_id', $horizon->id)
+                ->where('recommendations.0.is_selected', false)
                 ->where('recommendations.1.composer_name', 'laravel/scout')
+                ->where('recommendations.1.package_id', $scout->id)
+                ->where('recommendations.1.is_selected', false)
                 ->where('packages.data.0.compatibility_warnings', [])
                 ->where('packages.data.1.compatibility_warnings', []),
             );

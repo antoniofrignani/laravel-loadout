@@ -61,6 +61,10 @@ class ArtifactGenerator
             'phpunit/phpunit' => '^12.0',
         ];
 
+        if ($this->builderValue($loadout, 'runtime.local_runtime', 'sail') === 'sail') {
+            $requireDev['laravel/sail'] = '^1.48';
+        }
+
         foreach ($packages as $package) {
             if ($package->composer_name) {
                 if ($this->isDevDependency($package)) {
@@ -320,14 +324,40 @@ class ArtifactGenerator
             '## Setup',
             '',
             '```bash',
-            'cp .env.loadout .env',
-            'composer install',
-            'yarn install',
-            './vendor/bin/sail up -d',
-            './vendor/bin/sail artisan key:generate',
-            './vendor/bin/sail artisan migrate',
+            ...$this->setupCommands($loadout),
             '```',
         ])."\n";
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function setupCommands(Loadout $loadout): array
+    {
+        if ($this->builderValue($loadout, 'runtime.local_runtime', 'sail') !== 'sail') {
+            return [
+                'cp .env.loadout .env',
+                'composer install',
+                'yarn install',
+                'php artisan key:generate',
+                'php artisan migrate',
+            ];
+        }
+
+        return [
+            'cp .env.loadout .env',
+            'docker run --rm \\',
+            '    -u "$(id -u):$(id -g)" \\',
+            '    -v "$(pwd):/var/www/html" \\',
+            '    -w /var/www/html \\',
+            '    laravelsail/php84-composer:latest \\',
+            '    composer install --ignore-platform-reqs',
+            './vendor/bin/sail up -d',
+            './vendor/bin/sail composer install',
+            './vendor/bin/sail yarn install',
+            './vendor/bin/sail artisan key:generate',
+            './vendor/bin/sail artisan migrate',
+        ];
     }
 
     private function builderValue(Loadout $loadout, string $key, string $default): string
