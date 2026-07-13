@@ -38,8 +38,8 @@ The second product phase turns Laravel Loadout into an account-based workspace w
 
 Current implementation status:
 
-- Completed: anonymous builder state, project basics, starter kit, runtime choices, package catalog selection, custom package suggestions, package moderation, hourly stat snapshots, artifact previews, zip downloads, public share pages, selected-package configuration, shared loadout cloning into the current builder session, an authenticated owner loadout library, authenticated starring for shared loadouts, public discovery for public loadouts, and owner-managed collaborator role primitives.
-- Next: apply collaborator permissions to builder editing and loadout library visibility.
+- Completed: anonymous builder state, project basics, starter kit, runtime choices, package catalog selection, custom package suggestions, package moderation, hourly stat snapshots, artifact previews, zip downloads, public share pages, selected-package configuration, shared loadout cloning into the current builder session, an authenticated owner loadout library, authenticated starring for shared loadouts, public discovery for public loadouts, owner-managed collaborator role primitives, and collaborator-aware library/resume/edit permissions.
+- Next: collaborator read-only detail views and package/loadout curation profiles.
 
 ## Builder Flow
 

@@ -24,6 +24,9 @@ type Loadout = {
     star_count: number;
     clone_count: number;
     source_loadout_id: number | null;
+    access_role: 'owner' | 'editor' | 'viewer' | null;
+    can_edit: boolean;
+    can_manage_collaborators: boolean;
     updated_at: string | null;
     published_at: string | null;
 };
@@ -107,6 +110,13 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                                 cloned
                                             </Badge>
                                         )}
+                                        {loadout.access_role &&
+                                            loadout.access_role !==
+                                                'owner' && (
+                                                <Badge variant="outline">
+                                                    {loadout.access_role}
+                                                </Badge>
+                                            )}
                                     </div>
                                     <CardTitle className="text-2xl">
                                         {loadout.title}
@@ -148,19 +158,25 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
-                                        <Form {...resume.form(loadout.slug)}>
-                                            {({ processing }) => (
-                                                <Button
-                                                    type="submit"
-                                                    disabled={processing}
-                                                >
-                                                    <Play className="size-4" />
-                                                    {processing
-                                                        ? 'Opening...'
-                                                        : 'Resume'}
-                                                </Button>
-                                            )}
-                                        </Form>
+                                        {loadout.can_edit ? (
+                                            <Form {...resume.form(loadout.slug)}>
+                                                {({ processing }) => (
+                                                    <Button
+                                                        type="submit"
+                                                        disabled={processing}
+                                                    >
+                                                        <Play className="size-4" />
+                                                        {processing
+                                                            ? 'Opening...'
+                                                            : 'Resume'}
+                                                    </Button>
+                                                )}
+                                            </Form>
+                                        ) : (
+                                            <Button disabled variant="secondary">
+                                                View access
+                                            </Button>
+                                        )}
                                         {loadout.visibility !== 'private' && (
                                             <Button asChild variant="outline">
                                                 <Link
@@ -170,15 +186,17 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                                 </Link>
                                             </Button>
                                         )}
-                                        <Button asChild variant="ghost">
-                                            <Link
-                                                href={collaboratorsIndex.url(
-                                                    loadout.slug,
-                                                )}
-                                            >
-                                                Collaborators
-                                            </Link>
-                                        </Button>
+                                        {loadout.can_manage_collaborators && (
+                                            <Button asChild variant="ghost">
+                                                <Link
+                                                    href={collaboratorsIndex.url(
+                                                        loadout.slug,
+                                                    )}
+                                                >
+                                                    Collaborators
+                                                </Link>
+                                            </Button>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>

@@ -15,6 +15,8 @@ class LoadoutBuilder
 {
     private const SessionKey = 'laravel_loadout.current_loadout_id';
 
+    public function __construct(private LoadoutAccess $access) {}
+
     public function useDraft(Session $session, Loadout $loadout): void
     {
         $session->put(self::SessionKey, $loadout->id);
@@ -28,11 +30,21 @@ class LoadoutBuilder
             $loadout = Loadout::query()->whereKey($loadoutId)->first();
 
             if ($loadout) {
-                if ($user && ! $loadout->user_id) {
-                    $loadout->forceFill(['user_id' => $user->id])->save();
+                if (! $user && ! $loadout->user_id) {
+                    return $loadout;
                 }
 
-                return $loadout;
+                if ($user && ! $loadout->user_id) {
+                    $loadout->forceFill(['user_id' => $user->id])->save();
+
+                    return $loadout;
+                }
+
+                if ($user && $this->access->canEdit($user, $loadout)) {
+                    return $loadout;
+                }
+
+                $session->forget(self::SessionKey);
             }
         }
 

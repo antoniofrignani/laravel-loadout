@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\LoadoutVisibility;
 use App\Models\Loadout;
+use App\Models\LoadoutCollaborator;
 use App\Models\LoadoutPackage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -50,7 +51,59 @@ class LoadoutLibraryTest extends TestCase
                 ->where('loadouts.0.title', 'Published Stack')
                 ->where('loadouts.0.visibility', 'unlisted')
                 ->where('loadouts.0.packages_count', 2)
+                ->where('loadouts.0.access_role', 'owner')
+                ->where('loadouts.0.can_edit', true)
+                ->where('loadouts.0.can_manage_collaborators', true)
                 ->where('loadouts.1.id', $olderLoadout->id),
+            );
+    }
+
+    public function test_user_can_view_collaborated_loadouts_in_library(): void
+    {
+        $this->withoutVite();
+
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $editor = User::factory()->create();
+        $viewerLoadout = Loadout::factory()->for($owner)->create([
+            'title' => 'Viewer Stack',
+            'updated_at' => now(),
+        ]);
+        $editorLoadout = Loadout::factory()->for($owner)->create([
+            'title' => 'Editor Stack',
+            'updated_at' => now()->subMinute(),
+        ]);
+        LoadoutCollaborator::query()->create([
+            'loadout_id' => $viewerLoadout->id,
+            'user_id' => $viewer->id,
+            'role' => 'viewer',
+        ]);
+        LoadoutCollaborator::query()->create([
+            'loadout_id' => $editorLoadout->id,
+            'user_id' => $editor->id,
+            'role' => 'editor',
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('loadouts.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('loadouts', 1)
+                ->where('loadouts.0.title', 'Viewer Stack')
+                ->where('loadouts.0.access_role', 'viewer')
+                ->where('loadouts.0.can_edit', false)
+                ->where('loadouts.0.can_manage_collaborators', false),
+            );
+
+        $this->actingAs($editor)
+            ->get(route('loadouts.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('loadouts', 1)
+                ->where('loadouts.0.title', 'Editor Stack')
+                ->where('loadouts.0.access_role', 'editor')
+                ->where('loadouts.0.can_edit', true)
+                ->where('loadouts.0.can_manage_collaborators', false),
             );
     }
 
@@ -85,6 +138,56 @@ class LoadoutLibraryTest extends TestCase
         $loadout = Loadout::factory()->for($otherUser)->create();
 
         $this->actingAs($user)
+            ->post(route('loadouts.resume', $loadout))
+            ->assertNotFound();
+    }
+
+    public function test_editor_collaborator_can_resume_and_edit_loadout(): void
+    {
+        $this->withoutVite();
+
+        $owner = User::factory()->create();
+        $editor = User::factory()->create();
+        $loadout = Loadout::factory()->for($owner)->create([
+            'title' => 'Shared Stack',
+            'slug' => 'shared-stack',
+        ]);
+        LoadoutCollaborator::query()->create([
+            'loadout_id' => $loadout->id,
+            'user_id' => $editor->id,
+            'role' => 'editor',
+        ]);
+
+        $this->actingAs($editor)
+            ->post(route('loadouts.resume', $loadout))
+            ->assertRedirect(route('builder.review'));
+
+        $this->actingAs($editor)
+            ->put(route('builder.project.update'), [
+                'project_name' => 'Edited Shared Stack',
+                'app_name' => 'Shared App',
+                'description' => 'Updated by an editor collaborator.',
+                'php_version' => '8.5',
+                'laravel_version' => '13.x',
+                'package_manager' => 'yarn',
+            ])
+            ->assertRedirect(route('builder.starter'));
+
+        $this->assertSame('Edited Shared Stack', $loadout->refresh()->title);
+    }
+
+    public function test_viewer_collaborator_cannot_resume_loadout(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $loadout = Loadout::factory()->for($owner)->create();
+        LoadoutCollaborator::query()->create([
+            'loadout_id' => $loadout->id,
+            'user_id' => $viewer->id,
+            'role' => 'viewer',
+        ]);
+
+        $this->actingAs($viewer)
             ->post(route('loadouts.resume', $loadout))
             ->assertNotFound();
     }

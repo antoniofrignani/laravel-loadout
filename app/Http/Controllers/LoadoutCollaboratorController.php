@@ -6,6 +6,7 @@ use App\Http\Requests\StoreLoadoutCollaboratorRequest;
 use App\Models\Loadout;
 use App\Models\LoadoutCollaborator;
 use App\Models\User;
+use App\Services\LoadoutAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,9 +14,9 @@ use Inertia\Response;
 
 class LoadoutCollaboratorController extends Controller
 {
-    public function index(Request $request, Loadout $loadout): Response
+    public function index(Request $request, Loadout $loadout, LoadoutAccess $access): Response
     {
-        $this->authorizeOwner($request, $loadout);
+        $this->authorizeOwner($request, $loadout, $access);
 
         $loadout->load(['collaborators.user' => fn ($query) => $query->select('id', 'name', 'email')]);
 
@@ -39,9 +40,9 @@ class LoadoutCollaboratorController extends Controller
         ]);
     }
 
-    public function store(StoreLoadoutCollaboratorRequest $request, Loadout $loadout): RedirectResponse
+    public function store(StoreLoadoutCollaboratorRequest $request, Loadout $loadout, LoadoutAccess $access): RedirectResponse
     {
-        $this->authorizeOwner($request, $loadout);
+        $this->authorizeOwner($request, $loadout, $access);
 
         $data = $request->collaboratorData();
         $collaborator = User::query()->where('email', $data['email'])->firstOrFail();
@@ -59,9 +60,9 @@ class LoadoutCollaboratorController extends Controller
         return back();
     }
 
-    public function destroy(Request $request, Loadout $loadout, LoadoutCollaborator $collaborator): RedirectResponse
+    public function destroy(Request $request, Loadout $loadout, LoadoutCollaborator $collaborator, LoadoutAccess $access): RedirectResponse
     {
-        $this->authorizeOwner($request, $loadout);
+        $this->authorizeOwner($request, $loadout, $access);
 
         abort_unless($collaborator->loadout_id === $loadout->id, 404);
 
@@ -70,10 +71,10 @@ class LoadoutCollaboratorController extends Controller
         return back();
     }
 
-    private function authorizeOwner(Request $request, Loadout $loadout): void
+    private function authorizeOwner(Request $request, Loadout $loadout, LoadoutAccess $access): void
     {
         $user = $request->user();
 
-        abort_unless($user instanceof User && $loadout->user_id === $user->id, 404);
+        abort_unless($user instanceof User && $access->canManageCollaborators($user, $loadout), 404);
     }
 }
