@@ -72,4 +72,12 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasMany(LoadoutStar::class);
     }
+
+    /**
+     * @return HasMany<LoadoutCollaborator, $this>
+     */
+    public function loadoutCollaborations(): HasMany
+    {
+        return $this->hasMany(LoadoutCollaborator::class);
+    }
 }

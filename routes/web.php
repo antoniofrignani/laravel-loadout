@@ -10,6 +10,7 @@ use App\Http\Controllers\Builder\ReviewController;
 use App\Http\Controllers\Builder\RuntimeController;
 use App\Http\Controllers\Builder\StarterKitController;
 use App\Http\Controllers\LoadoutCloneController;
+use App\Http\Controllers\LoadoutCollaboratorController;
 use App\Http\Controllers\LoadoutDiscoveryController;
 use App\Http\Controllers\LoadoutDownloadController;
 use App\Http\Controllers\LoadoutLibraryController;
@@ -48,6 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
     Route::get('loadouts', LoadoutLibraryController::class)->name('loadouts.index');
     Route::post('loadouts/{loadout:slug}/resume', LoadoutResumeController::class)->name('loadouts.resume');
+    Route::get('loadouts/{loadout:slug}/collaborators', [LoadoutCollaboratorController::class, 'index'])->name('loadouts.collaborators.index');
+    Route::post('loadouts/{loadout:slug}/collaborators', [LoadoutCollaboratorController::class, 'store'])->name('loadouts.collaborators.store');
+    Route::delete('loadouts/{loadout:slug}/collaborators/{collaborator}', [LoadoutCollaboratorController::class, 'destroy'])->name('loadouts.collaborators.destroy');
     Route::post('loadouts/{loadout:slug}/stars', [LoadoutStarController::class, 'store'])->name('loadouts.stars.store');
     Route::delete('loadouts/{loadout:slug}/stars', [LoadoutStarController::class, 'destroy'])->name('loadouts.stars.destroy');
 });

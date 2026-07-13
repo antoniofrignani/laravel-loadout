@@ -134,6 +134,14 @@ class Loadout extends Model
     }
 
     /**
+     * @return HasMany<LoadoutCollaborator, $this>
+     */
+    public function collaborators(): HasMany
+    {
+        return $this->hasMany(LoadoutCollaborator::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { project } from '@/routes/builder';
 import { index as loadoutsIndex, resume, show } from '@/routes/loadouts';
+import { index as collaboratorsIndex } from '@/routes/loadouts/collaborators';
 
 type Loadout = {
     id: number;
@@ -169,6 +170,15 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                                 </Link>
                                             </Button>
                                         )}
+                                        <Button asChild variant="ghost">
+                                            <Link
+                                                href={collaboratorsIndex.url(
+                                                    loadout.slug,
+                                                )}
+                                            >
+                                                Collaborators
+                                            </Link>
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>
