@@ -14,6 +14,7 @@ use App\Http\Controllers\LoadoutDownloadController;
 use App\Http\Controllers\LoadoutLibraryController;
 use App\Http\Controllers\LoadoutResumeController;
 use App\Http\Controllers\LoadoutShowController;
+use App\Http\Controllers\LoadoutStarController;
 use App\Http\Controllers\PackageSuggestionModerationController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
     Route::get('loadouts', LoadoutLibraryController::class)->name('loadouts.index');
     Route::post('loadouts/{loadout:slug}/resume', LoadoutResumeController::class)->name('loadouts.resume');
+    Route::post('loadouts/{loadout:slug}/stars', [LoadoutStarController::class, 'store'])->name('loadouts.stars.store');
+    Route::delete('loadouts/{loadout:slug}/stars', [LoadoutStarController::class, 'destroy'])->name('loadouts.stars.destroy');
 });
 
 require __DIR__.'/settings.php';

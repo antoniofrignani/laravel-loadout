@@ -126,6 +126,14 @@ class Loadout extends Model
     }
 
     /**
+     * @return HasMany<LoadoutStar, $this>
+     */
+    public function stars(): HasMany
+    {
+        return $this->hasMany(LoadoutStar::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

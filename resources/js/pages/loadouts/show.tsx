@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Copy, Download, FileText, PackageCheck } from 'lucide-react';
+import { Copy, Download, FileText, PackageCheck, Star } from 'lucide-react';
 
 import LoadoutCloneController from '@/actions/App/Http/Controllers/LoadoutCloneController';
 import { Badge } from '@/components/ui/badge';
@@ -11,8 +11,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { download as downloadLoadout } from '@/routes/loadouts';
-import { home } from '@/routes';
+import { home, login } from '@/routes';
+import {
+    download as downloadLoadout,
+} from '@/routes/loadouts';
+import {
+    destroy as unstarLoadout,
+    store as starLoadout,
+} from '@/routes/loadouts/stars';
 
 type Loadout = {
     title: string;
@@ -21,6 +27,11 @@ type Loadout = {
     visibility: string;
     published_at: string | null;
     share_url: string;
+    star_count: number;
+    viewer_has_starred: boolean;
+    viewer_authenticated: boolean;
+    viewer_is_owner: boolean;
+    can_star: boolean;
 };
 
 type Package = {
@@ -53,6 +64,10 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                             <Badge variant="secondary">
                                 {loadout.visibility}
                             </Badge>
+                            <Badge variant="outline">
+                                <Star className="size-3.5 fill-current" />
+                                {loadout.star_count}
+                            </Badge>
                             {loadout.published_at && (
                                 <span className="text-sm text-muted-foreground">
                                     Published {loadout.published_at}
@@ -67,6 +82,48 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                 'A shared Laravel starter stack generated with Laravel Loadout.'}
                         </p>
                         <div className="mt-6 flex flex-wrap gap-3">
+                            {loadout.can_star ? (
+                                <Form
+                                    {...(loadout.viewer_has_starred
+                                        ? unstarLoadout.form(loadout.slug)
+                                        : starLoadout.form(loadout.slug))}
+                                >
+                                    {({ processing }) => (
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            variant={
+                                                loadout.viewer_has_starred
+                                                    ? 'outline'
+                                                    : 'secondary'
+                                            }
+                                        >
+                                            <Star
+                                                className={
+                                                    loadout.viewer_has_starred
+                                                        ? 'size-4 fill-current'
+                                                        : 'size-4'
+                                                }
+                                            />
+                                            {loadout.viewer_has_starred
+                                                ? 'Starred'
+                                                : 'Star'}
+                                        </Button>
+                                    )}
+                                </Form>
+                            ) : loadout.viewer_is_owner ? (
+                                <Button disabled variant="secondary">
+                                    <Star className="size-4" />
+                                    Your loadout
+                                </Button>
+                            ) : (
+                                <Button asChild variant="secondary">
+                                    <Link href={login.url()}>
+                                        <Star className="size-4" />
+                                        Sign in to star
+                                    </Link>
+                                </Button>
+                            )}
                             <Form {...LoadoutCloneController.form(loadout.slug)}>
                                 {({ processing }) => (
                                     <Button
