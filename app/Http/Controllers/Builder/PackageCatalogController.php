@@ -60,6 +60,10 @@ class PackageCatalogController extends Controller
                     ->whereNotNull('package_id')
                     ->pluck('package_id')
                     ->all(),
+                'selected_packages' => $loadout->packages()
+                    ->whereNotNull('package_id')
+                    ->orderBy('position')
+                    ->get(['id', 'display_name', 'composer_name', 'install_options', 'notes']),
                 'custom_packages' => $loadout->packages()
                     ->where('is_custom', true)
                     ->orderBy('position')

@@ -56,10 +56,18 @@ class ArtifactGenerator
             'laravel/framework' => $this->builderValue($loadout, 'project.laravel_version', '^13.0'),
             'laravel/tinker' => '^2.10',
         ];
+        $requireDev = [
+            'laravel/pint' => '^1.25',
+            'phpunit/phpunit' => '^12.0',
+        ];
 
         foreach ($packages as $package) {
             if ($package->composer_name) {
-                $require[$package->composer_name] = '*';
+                if ($this->isDevDependency($package)) {
+                    $requireDev[$package->composer_name] = '*';
+                } else {
+                    $require[$package->composer_name] = '*';
+                }
             }
         }
 
@@ -68,10 +76,7 @@ class ArtifactGenerator
             'type' => 'project',
             'description' => $loadout->description ?: 'Generated Laravel Loadout starter.',
             'require' => $require,
-            'require-dev' => [
-                'laravel/pint' => '^1.25',
-                'phpunit/phpunit' => '^12.0',
-            ],
+            'require-dev' => $requireDev,
             'autoload' => [
                 'psr-4' => [
                     'App\\' => 'app/',
@@ -286,7 +291,7 @@ class ArtifactGenerator
     private function readme(Loadout $loadout, Collection $packages): string
     {
         $packageLines = $packages
-            ->map(fn (LoadoutPackage $package): string => '- '.($package->composer_name ?? $package->display_name))
+            ->map(fn (LoadoutPackage $package): string => $this->packageReadmeLine($package))
             ->implode("\n");
 
         return implode("\n", [
@@ -330,6 +335,28 @@ class ArtifactGenerator
         $value = data_get($loadout->builder_state, $key);
 
         return is_string($value) && $value !== '' ? $value : $default;
+    }
+
+    private function isDevDependency(LoadoutPackage $package): bool
+    {
+        $options = $package->install_options;
+
+        return is_array($options) && ($options['dev_dependency'] ?? false) === true;
+    }
+
+    private function packageReadmeLine(LoadoutPackage $package): string
+    {
+        $line = '- '.($package->composer_name ?? $package->display_name);
+
+        if ($this->isDevDependency($package)) {
+            $line .= ' (dev dependency)';
+        }
+
+        if ($package->notes) {
+            $line .= ' - '.$package->notes;
+        }
+
+        return $line;
     }
 
     private function databaseHost(string $database): string

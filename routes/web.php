@@ -23,6 +23,7 @@ Route::get('builder/runtime', [RuntimeController::class, 'show'])->name('builder
 Route::put('builder/runtime', [RuntimeController::class, 'update'])->name('builder.runtime.update');
 Route::get('builder/packages', PackageCatalogController::class)->name('builder.packages');
 Route::post('builder/packages', [LoadoutPackageController::class, 'store'])->name('builder.packages.store');
+Route::patch('builder/packages/{loadout_package}', [LoadoutPackageController::class, 'update'])->name('builder.packages.update');
 Route::post('builder/custom-packages', [CustomPackageController::class, 'store'])->name('builder.custom-packages.store');
 Route::get('builder/review', ReviewController::class)->name('builder.review');
 Route::get('builder/download', DownloadController::class)->name('builder.download');

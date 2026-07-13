@@ -364,5 +364,6 @@ This is the core value of the product and should be treated as a first-class sea
 - Completed: editable Project Basics builder step with persisted project metadata feeding generated artifacts.
 - Completed: editable Starter Kit and Runtime builder steps with persisted stack/runtime choices feeding generated artifacts.
 - Completed: official Laravel package recommendations, seeded first-party package catalog entries, and compatibility warnings for packages requiring disabled services.
+- Completed: selected-package configuration with package-specific notes and dev-dependency install options feeding generated Composer and README output.
 - Completed: backend and frontend verification with `vendor/bin/sail composer test` and `vendor/bin/sail yarn run build`.
-- Next: implement package-specific install notes and selected-package configuration.
+- Next: implement duplicate/fork flow for shared loadouts.

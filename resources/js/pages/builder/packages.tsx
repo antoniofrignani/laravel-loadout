@@ -10,7 +10,10 @@ import {
 } from 'lucide-react';
 
 import { store as storeCustomPackage } from '@/actions/App/Http/Controllers/Builder/CustomPackageController';
-import { store as storeLoadoutPackage } from '@/actions/App/Http/Controllers/Builder/LoadoutPackageController';
+import {
+    store as storeLoadoutPackage,
+    update as updateLoadoutPackage,
+} from '@/actions/App/Http/Controllers/Builder/LoadoutPackageController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +31,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { packages as builderPackages } from '@/routes/builder';
 
 type Category = {
@@ -85,10 +89,21 @@ type CustomLoadoutPackage = {
     source_url: string | null;
 };
 
+type SelectedLoadoutPackage = {
+    id: number;
+    display_name: string;
+    composer_name: string | null;
+    install_options: {
+        dev_dependency?: boolean;
+    } | null;
+    notes: string | null;
+};
+
 type DraftLoadout = {
     id: number;
     title: string;
     selected_package_ids: number[];
+    selected_packages: SelectedLoadoutPackage[];
     custom_packages: CustomLoadoutPackage[];
 };
 
@@ -378,6 +393,98 @@ export default function BuilderPackages({
                         </CardContent>
                     </Card>
                 </section>
+
+                {loadout.selected_packages.length > 0 && (
+                    <section className="grid gap-3 lg:grid-cols-2">
+                        {loadout.selected_packages.map((selectedPackage) => (
+                            <Card
+                                key={selectedPackage.id}
+                                className="rounded-lg"
+                            >
+                                <CardHeader>
+                                    <CardTitle className="text-base">
+                                        Configure {selectedPackage.display_name}
+                                    </CardTitle>
+                                    <CardDescription className="font-mono text-xs">
+                                        {selectedPackage.composer_name}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Form
+                                        className="grid gap-3"
+                                        {...updateLoadoutPackage.form(
+                                            selectedPackage.id,
+                                        )}
+                                    >
+                                        {({ errors, processing }) => (
+                                            <>
+                                                <label className="grid gap-1.5">
+                                                    <span className="text-xs font-medium text-muted-foreground">
+                                                        Install target
+                                                    </span>
+                                                    <Select
+                                                        defaultValue={
+                                                            selectedPackage
+                                                                .install_options
+                                                                ?.dev_dependency
+                                                                ? '1'
+                                                                : '0'
+                                                        }
+                                                        name="install_as_dev"
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="0">
+                                                                Production
+                                                                dependency
+                                                            </SelectItem>
+                                                            <SelectItem value="1">
+                                                                Dev dependency
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {errors.install_as_dev && (
+                                                        <p className="text-sm text-destructive">
+                                                            {
+                                                                errors.install_as_dev
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </label>
+                                                <label className="grid gap-1.5">
+                                                    <span className="text-xs font-medium text-muted-foreground">
+                                                        Setup notes
+                                                    </span>
+                                                    <Textarea
+                                                        name="notes"
+                                                        defaultValue={
+                                                            selectedPackage.notes ??
+                                                            ''
+                                                        }
+                                                        placeholder="Mention config publishes, manual env vars, or package-specific setup."
+                                                    />
+                                                    {errors.notes && (
+                                                        <p className="text-sm text-destructive">
+                                                            {errors.notes}
+                                                        </p>
+                                                    )}
+                                                </label>
+                                                <Button
+                                                    disabled={processing}
+                                                    size="sm"
+                                                >
+                                                    Save package notes
+                                                </Button>
+                                            </>
+                                        )}
+                                    </Form>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </section>
+                )}
 
                 {recommendations.length > 0 && (
                     <section className="grid gap-3 md:grid-cols-3">

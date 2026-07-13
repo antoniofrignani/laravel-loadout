@@ -166,6 +166,66 @@ class BuilderPackageCatalogPageTest extends TestCase
         $this->assertSame($package->id, $selection->package_id);
         $this->assertFalse($selection->is_custom);
         $this->assertSame('composer require spatie/laravel-permission', $selection->package_snapshot['install_command']);
+
+        $this->get(route('builder.packages'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('loadout.selected_packages', 1)
+                ->where('loadout.selected_packages.0.composer_name', 'spatie/laravel-permission'),
+            );
+    }
+
+    public function test_selected_package_notes_and_install_options_can_be_configured(): void
+    {
+        $this->withoutVite();
+
+        $package = Package::factory()->create([
+            'name' => 'Laravel Debugbar',
+            'composer_name' => 'barryvdh/laravel-debugbar',
+        ]);
+
+        $this->get(route('builder.packages'))->assertOk();
+        $this->post(route('builder.packages.store'), [
+            'package_id' => $package->id,
+        ])->assertRedirect(route('builder.packages'));
+
+        $selection = LoadoutPackage::query()->firstOrFail();
+
+        $this
+            ->from(route('builder.packages'))
+            ->patch(route('builder.packages.update', $selection), [
+                'install_as_dev' => '1',
+                'notes' => 'Enable only in local environments.',
+            ])
+            ->assertRedirect(route('builder.packages'));
+
+        $selection->refresh();
+
+        $this->assertSame('Enable only in local environments.', $selection->notes);
+        $this->assertSame(['dev_dependency' => true], $selection->install_options);
+
+        $this->get(route('builder.review'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('artifacts.0.content', fn (string $content): bool => str_contains($content, '"barryvdh/laravel-debugbar": "*"') && str_contains($content, '"require-dev"'))
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains($content, '- barryvdh/laravel-debugbar (dev dependency) - Enable only in local environments.')),
+            );
+    }
+
+    public function test_selected_package_configuration_must_belong_to_current_draft(): void
+    {
+        $this->withoutVite();
+
+        $foreignSelection = LoadoutPackage::factory()->create();
+
+        $this->get(route('builder.packages'))->assertOk();
+
+        $this
+            ->patch(route('builder.packages.update', $foreignSelection), [
+                'install_as_dev' => '0',
+                'notes' => 'Not allowed',
+            ])
+            ->assertNotFound();
     }
 
     public function test_custom_package_url_is_added_only_to_the_current_draft_loadout(): void
