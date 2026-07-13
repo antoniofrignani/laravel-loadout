@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 
 import PublishController from '@/actions/App/Http/Controllers/Builder/PublishController';
+import { ArtifactContent } from '@/components/artifact-content';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -164,9 +165,7 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <pre className="max-h-[520px] overflow-auto rounded-md bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-                                        <code>{artifact.content}</code>
-                                    </pre>
+                                    <ArtifactContent artifact={artifact} />
                                 </CardContent>
                             </Card>
                         ))}

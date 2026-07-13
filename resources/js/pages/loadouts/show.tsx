@@ -2,6 +2,7 @@ import { Form, Head, Link } from '@inertiajs/react';
 import { Copy, Download, FileText, PackageCheck, Star } from 'lucide-react';
 
 import LoadoutCloneController from '@/actions/App/Http/Controllers/LoadoutCloneController';
+import { ArtifactContent } from '@/components/artifact-content';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -216,9 +217,10 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <pre className="max-h-[420px] overflow-auto rounded-md bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-                                            <code>{artifact.content}</code>
-                                        </pre>
+                                        <ArtifactContent
+                                            artifact={artifact}
+                                            maxHeightClassName="max-h-[420px]"
+                                        />
                                     </CardContent>
                                 </Card>
                             ))}
