@@ -24,6 +24,10 @@ class PackageCatalogSeeder extends Seeder
             ['name' => 'Testing and quality', 'description' => 'Testing helpers, static analysis, and code quality tools.'],
             ['name' => 'Developer experience', 'description' => 'Productivity, debugging, and local development helpers.'],
             ['name' => 'Observability and debugging', 'description' => 'Runtime debugging, monitoring, and diagnostics.'],
+            ['name' => 'AI and automation', 'description' => 'AI SDKs, agents, workflows, and automation helpers.'],
+            ['name' => 'Integrations', 'description' => 'External APIs, notifications, webhooks, and service integrations.'],
+            ['name' => 'Forms and validation', 'description' => 'Form builders, validation, schemas, and input handling.'],
+            ['name' => 'Data and content', 'description' => 'Eloquent, database, content, and data modeling packages.'],
         ])->mapWithKeys(function (array $category, int $index): array {
             $model = PackageCategory::query()->updateOrCreate(
                 ['slug' => Str::slug($category['name'])],
@@ -130,6 +134,8 @@ class PackageCatalogSeeder extends Seeder
             ],
         ];
 
+        $packages = array_merge($packages, $this->laravelNewsPackages());
+
         foreach ($packages as $package) {
             $composerName = $package['composer_name'];
 
@@ -140,10 +146,10 @@ class PackageCatalogSeeder extends Seeder
                     'name' => $package['name'],
                     'slug' => Str::slug($composerName),
                     'description' => $package['description'],
-                    'source_url' => "https://github.com/{$composerName}",
+                    'source_url' => $package['source_url'] ?? "https://github.com/{$composerName}",
                     'packagist_url' => "https://packagist.org/packages/{$composerName}",
-                    'github_url' => "https://github.com/{$composerName}",
-                    'docs_url' => "https://github.com/{$composerName}#readme",
+                    'github_url' => $package['github_url'] ?? "https://github.com/{$composerName}",
+                    'docs_url' => $package['docs_url'] ?? "https://github.com/{$composerName}#readme",
                     'install_command' => "composer require {$composerName}",
                     'post_install_commands' => $package['post_install_commands'] ?? [],
                     'publish_commands' => $package['publish_commands'] ?? [],
@@ -153,9 +159,29 @@ class PackageCatalogSeeder extends Seeder
                     'php_version_constraints' => ['^8.3'],
                     'tags' => $package['tags'],
                     'is_official' => $package['is_official'] ?? false,
-                    'is_featured' => true,
+                    'is_featured' => $package['is_featured'] ?? true,
                 ],
             );
         }
+    }
+
+    /**
+     * @return array<int, array{
+     *     category: string,
+     *     name: string,
+     *     composer_name: string,
+     *     description: string,
+     *     tags: array<int, string>,
+     *     source_url?: string|null,
+     *     github_url?: string|null,
+     *     docs_url?: string|null,
+     *     required_services?: array<int, string>,
+     *     is_official?: bool,
+     *     is_featured?: bool,
+     * }>
+     */
+    private function laravelNewsPackages(): array
+    {
+        return require database_path('data/laravel-news-packages.php');
     }
 }
