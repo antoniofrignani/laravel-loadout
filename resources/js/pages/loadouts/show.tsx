@@ -1,6 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
-import { Download, FileText, PackageCheck } from 'lucide-react';
+import { Form, Head, Link } from '@inertiajs/react';
+import { Copy, Download, FileText, PackageCheck } from 'lucide-react';
 
+import LoadoutCloneController from '@/actions/App/Http/Controllers/LoadoutCloneController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,6 +67,18 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                 'A shared Laravel starter stack generated with Laravel Loadout.'}
                         </p>
                         <div className="mt-6 flex flex-wrap gap-3">
+                            <Form {...LoadoutCloneController.form(loadout.slug)}>
+                                {({ processing }) => (
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        variant="default"
+                                    >
+                                        <Copy className="size-4" />
+                                        {processing ? 'Cloning...' : 'Clone loadout'}
+                                    </Button>
+                                )}
+                            </Form>
                             <Button asChild>
                                 <a href={downloadLoadout.url({ loadout: loadout.slug })}>
                                     <Download className="size-4" />

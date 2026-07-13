@@ -9,6 +9,7 @@ use App\Http\Controllers\Builder\PublishController;
 use App\Http\Controllers\Builder\ReviewController;
 use App\Http\Controllers\Builder\RuntimeController;
 use App\Http\Controllers\Builder\StarterKitController;
+use App\Http\Controllers\LoadoutCloneController;
 use App\Http\Controllers\LoadoutDownloadController;
 use App\Http\Controllers\LoadoutShowController;
 use App\Http\Controllers\PackageSuggestionModerationController;
@@ -29,6 +30,7 @@ Route::get('builder/review', ReviewController::class)->name('builder.review');
 Route::get('builder/download', DownloadController::class)->name('builder.download');
 Route::post('builder/publish', PublishController::class)->name('builder.publish');
 Route::get('loadouts/{loadout:slug}/download', LoadoutDownloadController::class)->name('loadouts.download');
+Route::post('loadouts/{loadout:slug}/clone', LoadoutCloneController::class)->name('loadouts.clone');
 Route::get('loadouts/{loadout:slug}', LoadoutShowController::class)->name('loadouts.show');
 Route::get('package-suggestions/{package_suggestion}/approve', [PackageSuggestionModerationController::class, 'approve'])
     ->middleware('signed')

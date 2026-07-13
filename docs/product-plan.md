@@ -36,6 +36,11 @@ The second product phase turns Laravel Loadout into an account-based workspace w
 - Email notifications when users suggest unknown packages.
 - Duplicate or fork an existing public loadout into the current user account.
 
+Current implementation status:
+
+- Completed: anonymous builder state, project basics, starter kit, runtime choices, package catalog selection, custom package suggestions, package moderation, hourly stat snapshots, artifact previews, zip downloads, public share pages, selected-package configuration, and shared loadout cloning into the current builder session.
+- Next: account-owned loadout library, clone/fork ownership for authenticated users, starring, and collaborator role primitives.
+
 ## Builder Flow
 
 ### Step 1: Project Basics

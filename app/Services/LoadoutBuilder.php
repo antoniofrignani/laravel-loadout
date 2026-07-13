@@ -15,6 +15,11 @@ class LoadoutBuilder
 {
     private const SessionKey = 'laravel_loadout.current_loadout_id';
 
+    public function useDraft(Session $session, Loadout $loadout): void
+    {
+        $session->put(self::SessionKey, $loadout->id);
+    }
+
     public function currentDraft(Session $session, ?User $user = null): Loadout
     {
         $loadoutId = $session->get(self::SessionKey);
