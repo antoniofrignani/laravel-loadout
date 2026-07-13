@@ -353,5 +353,6 @@ This is the core value of the product and should be treated as a first-class sea
 - Completed: domain foundation for loadouts, package categories, curated packages, stat snapshots, package suggestions, selected loadout packages, step answers, generated artifacts, factories, and initial package catalog seeding.
 - Completed: Sail/MySQL migrations and `PackageCatalogSeeder` applied locally.
 - Completed: package catalog query layer for server-side search, filters, sorting, and pagination.
+- Completed: public builder package-selection route and Inertia page backed by the package catalog query layer.
 - Completed: backend verification with `vendor/bin/sail composer test`.
-- Next: expose the package catalog query layer through the builder package-selection route and Inertia page.
+- Next: implement selecting curated packages into a loadout and adding loadout-only custom package URLs from the package-selection page.
