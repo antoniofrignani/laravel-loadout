@@ -138,6 +138,14 @@ function selectedValue(value: string | null | undefined, fallback = 'all') {
     return value && value !== '' ? value : fallback;
 }
 
+function filterValue(filters: Filters | undefined, key: keyof Filters) {
+    if (!filters || !Object.hasOwn(filters, key)) {
+        return null;
+    }
+
+    return filters[key];
+}
+
 export default function BuilderPackages({
     packages,
     categories,
@@ -154,15 +162,14 @@ export default function BuilderPackages({
     const selectedPackages = loadout?.selected_packages ?? [];
     const customPackages = loadout?.custom_packages ?? [];
     const packageRecommendations = recommendations ?? [];
-    const activeFilters = filters ?? {};
-    const [search, setSearch] = useState(activeFilters.search ?? '');
+    const [search, setSearch] = useState(filterValue(filters, 'search') ?? '');
     const [category, setCategory] = useState(
-        selectedValue(activeFilters.category),
+        selectedValue(filterValue(filters, 'category')),
     );
-    const [type, setType] = useState(selectedValue(activeFilters.type));
-    const [service, setService] = useState(activeFilters.service ?? '');
+    const [type, setType] = useState(selectedValue(filterValue(filters, 'type')));
+    const [service, setService] = useState(filterValue(filters, 'service') ?? '');
     const [sort, setSort] = useState(
-        selectedValue(activeFilters.sort, 'relevance'),
+        selectedValue(filterValue(filters, 'sort'), 'relevance'),
     );
     const [customPackageUrl, setCustomPackageUrl] = useState('');
 

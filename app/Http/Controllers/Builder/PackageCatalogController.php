@@ -76,7 +76,7 @@ class PackageCatalogController extends Controller
                     ->all(),
             ],
             'recommendations' => $advisor->recommendations($loadout),
-            'filters' => $request->filters(),
+            'filters' => (object) $request->filters(),
         ]);
     }
 }
