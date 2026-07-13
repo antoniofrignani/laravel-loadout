@@ -26,12 +26,14 @@ type Loadout = {
     description: string | null;
     visibility: string;
     published_at: string | null;
-    share_url: string;
+    share_url: string | null;
     star_count: number;
     viewer_has_starred: boolean;
     viewer_authenticated: boolean;
     viewer_is_owner: boolean;
     can_star: boolean;
+    can_clone: boolean;
+    can_download: boolean;
 };
 
 type Package = {
@@ -116,32 +118,40 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                     <Star className="size-4" />
                                     Your loadout
                                 </Button>
-                            ) : (
+                            ) : loadout.visibility !== 'private' ? (
                                 <Button asChild variant="secondary">
                                     <Link href={login.url()}>
                                         <Star className="size-4" />
                                         Sign in to star
                                     </Link>
                                 </Button>
+                            ) : (
+                                <Button disabled variant="secondary">
+                                    Private access
+                                </Button>
                             )}
-                            <Form {...LoadoutCloneController.form(loadout.slug)}>
-                                {({ processing }) => (
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                        variant="default"
-                                    >
-                                        <Copy className="size-4" />
-                                        {processing ? 'Cloning...' : 'Clone loadout'}
-                                    </Button>
-                                )}
-                            </Form>
-                            <Button asChild>
-                                <a href={downloadLoadout.url({ loadout: loadout.slug })}>
-                                    <Download className="size-4" />
-                                    Download zip
-                                </a>
-                            </Button>
+                            {loadout.can_clone && (
+                                <Form {...LoadoutCloneController.form(loadout.slug)}>
+                                    {({ processing }) => (
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            variant="default"
+                                        >
+                                            <Copy className="size-4" />
+                                            {processing ? 'Cloning...' : 'Clone loadout'}
+                                        </Button>
+                                    )}
+                                </Form>
+                            )}
+                            {loadout.can_download && (
+                                <Button asChild>
+                                    <a href={downloadLoadout.url({ loadout: loadout.slug })}>
+                                        <Download className="size-4" />
+                                        Download zip
+                                    </a>
+                                </Button>
+                            )}
                             <Button asChild variant="outline">
                                 <Link href={home.url()}>Build your own</Link>
                             </Button>

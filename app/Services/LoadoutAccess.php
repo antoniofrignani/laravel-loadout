@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\LoadoutVisibility;
 use App\Models\Loadout;
 use App\Models\User;
 
@@ -31,6 +32,15 @@ class LoadoutAccess
     public function canEdit(User $user, Loadout $loadout): bool
     {
         return in_array($this->roleFor($user, $loadout), ['owner', 'editor'], true);
+    }
+
+    public function canView(?User $user, Loadout $loadout): bool
+    {
+        if ($loadout->visibility !== LoadoutVisibility::Private) {
+            return true;
+        }
+
+        return $user instanceof User && $this->roleFor($user, $loadout) !== null;
     }
 
     public function canManageCollaborators(User $user, Loadout $loadout): bool

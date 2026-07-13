@@ -177,12 +177,16 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                                 View access
                                             </Button>
                                         )}
-                                        {loadout.visibility !== 'private' && (
+                                        {(loadout.visibility !== 'private' ||
+                                            !loadout.can_edit) && (
                                             <Button asChild variant="outline">
                                                 <Link
                                                     href={show.url(loadout.slug)}
                                                 >
-                                                    View share page
+                                                    {loadout.visibility ===
+                                                    'private'
+                                                        ? 'View details'
+                                                        : 'View share page'}
                                                 </Link>
                                             </Button>
                                         )}

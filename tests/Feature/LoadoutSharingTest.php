@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\LoadoutVisibility;
 use App\Models\Loadout;
+use App\Models\LoadoutCollaborator;
 use App\Models\LoadoutPackage;
 use App\Models\Package;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -77,6 +79,49 @@ class LoadoutSharingTest extends TestCase
 
         $this->get(route('loadouts.show', $loadout))->assertNotFound();
         $this->get(route('loadouts.download', $loadout))->assertNotFound();
+    }
+
+    public function test_private_loadout_detail_page_is_visible_to_collaborator(): void
+    {
+        $this->withoutVite();
+
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $loadout = Loadout::factory()->for($owner)->create([
+            'title' => 'Private Team Stack',
+            'visibility' => LoadoutVisibility::Private,
+        ]);
+        LoadoutCollaborator::query()->create([
+            'loadout_id' => $loadout->id,
+            'user_id' => $viewer->id,
+            'role' => 'viewer',
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('loadouts.show', $loadout))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('loadouts/show')
+                ->where('loadout.title', 'Private Team Stack')
+                ->where('loadout.visibility', 'private')
+                ->where('loadout.share_url', null)
+                ->where('loadout.can_star', false)
+                ->where('loadout.can_clone', false)
+                ->where('loadout.can_download', false),
+            );
+    }
+
+    public function test_private_loadout_detail_page_is_not_visible_to_unrelated_user(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $loadout = Loadout::factory()->for($owner)->create([
+            'visibility' => LoadoutVisibility::Private,
+        ]);
+
+        $this->actingAs($otherUser)
+            ->get(route('loadouts.show', $loadout))
+            ->assertNotFound();
     }
 
     public function test_shared_loadout_can_be_downloaded_as_zip(): void
