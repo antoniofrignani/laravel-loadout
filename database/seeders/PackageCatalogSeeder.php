@@ -1,0 +1,120 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Package;
+use App\Models\PackageCategory;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+
+class PackageCatalogSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $categories = collect([
+            ['name' => 'Authentication and authorization', 'description' => 'Identity, roles, permissions, and access control.'],
+            ['name' => 'Admin panels', 'description' => 'Back-office dashboards and application admin tooling.'],
+            ['name' => 'Billing and payments', 'description' => 'Subscriptions, invoices, checkouts, and payments.'],
+            ['name' => 'Media and uploads', 'description' => 'File uploads, media libraries, and image handling.'],
+            ['name' => 'Search', 'description' => 'Application search and indexing packages.'],
+            ['name' => 'Testing and quality', 'description' => 'Testing helpers, static analysis, and code quality tools.'],
+            ['name' => 'Developer experience', 'description' => 'Productivity, debugging, and local development helpers.'],
+            ['name' => 'Observability and debugging', 'description' => 'Runtime debugging, monitoring, and diagnostics.'],
+        ])->mapWithKeys(function (array $category, int $index): array {
+            $model = PackageCategory::query()->updateOrCreate(
+                ['slug' => Str::slug($category['name'])],
+                [
+                    'name' => $category['name'],
+                    'description' => $category['description'],
+                    'sort_order' => $index + 1,
+                    'is_active' => true,
+                ],
+            );
+
+            return [$model->slug => $model];
+        });
+
+        $packages = [
+            [
+                'category' => 'authentication-and-authorization',
+                'name' => 'Laravel Permission',
+                'composer_name' => 'spatie/laravel-permission',
+                'description' => 'Associate users with roles and permissions in a Laravel application.',
+                'tags' => ['roles', 'permissions', 'authorization'],
+                'publish_commands' => ['php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"'],
+                'migration_commands' => ['php artisan migrate'],
+            ],
+            [
+                'category' => 'media-and-uploads',
+                'name' => 'Laravel Medialibrary',
+                'composer_name' => 'spatie/laravel-medialibrary',
+                'description' => 'Associate files with Eloquent models and manage conversions.',
+                'tags' => ['uploads', 'media', 'images'],
+                'publish_commands' => ['php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-migrations"'],
+                'migration_commands' => ['php artisan migrate'],
+            ],
+            [
+                'category' => 'developer-experience',
+                'name' => 'Laravel Debugbar',
+                'composer_name' => 'barryvdh/laravel-debugbar',
+                'description' => 'Add a local debugging toolbar for requests, queries, views, and logs.',
+                'tags' => ['debugging', 'queries', 'local-development'],
+                'publish_commands' => ['php artisan vendor:publish --provider="Barryvdh\Debugbar\ServiceProvider"'],
+            ],
+            [
+                'category' => 'testing-and-quality',
+                'name' => 'Laravel IDE Helper',
+                'composer_name' => 'barryvdh/laravel-ide-helper',
+                'description' => 'Generate IDE helper files for better Laravel autocomplete.',
+                'tags' => ['ide', 'autocomplete', 'developer-experience'],
+                'post_install_commands' => ['php artisan ide-helper:generate'],
+            ],
+            [
+                'category' => 'search',
+                'name' => 'Meilisearch PHP',
+                'composer_name' => 'meilisearch/meilisearch-php',
+                'description' => 'Official PHP client for Meilisearch-powered search features.',
+                'tags' => ['search', 'meilisearch', 'scout'],
+                'required_services' => ['meilisearch'],
+            ],
+            [
+                'category' => 'admin-panels',
+                'name' => 'Filament',
+                'composer_name' => 'filament/filament',
+                'description' => 'Build Laravel admin panels, forms, tables, and dashboards.',
+                'tags' => ['admin', 'dashboard', 'forms'],
+                'post_install_commands' => ['php artisan filament:install --panels'],
+            ],
+        ];
+
+        foreach ($packages as $package) {
+            $composerName = $package['composer_name'];
+
+            Package::query()->updateOrCreate(
+                ['composer_name' => $composerName],
+                [
+                    'package_category_id' => $categories[$package['category']]->id,
+                    'name' => $package['name'],
+                    'slug' => Str::slug($composerName),
+                    'description' => $package['description'],
+                    'source_url' => "https://github.com/{$composerName}",
+                    'packagist_url' => "https://packagist.org/packages/{$composerName}",
+                    'github_url' => "https://github.com/{$composerName}",
+                    'docs_url' => "https://github.com/{$composerName}#readme",
+                    'install_command' => "composer require {$composerName}",
+                    'post_install_commands' => $package['post_install_commands'] ?? [],
+                    'publish_commands' => $package['publish_commands'] ?? [],
+                    'migration_commands' => $package['migration_commands'] ?? [],
+                    'required_services' => $package['required_services'] ?? [],
+                    'laravel_version_constraints' => ['^13.0'],
+                    'php_version_constraints' => ['^8.3'],
+                    'tags' => $package['tags'],
+                    'is_featured' => true,
+                ],
+            );
+        }
+    }
+}
