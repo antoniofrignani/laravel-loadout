@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $loadout_id
+ * @property int|null $package_id
+ * @property int|null $package_suggestion_id
+ * @property string $display_name
+ * @property string|null $composer_name
+ * @property string|null $npm_name
+ * @property string|null $source_url
+ * @property bool $is_custom
+ * @property array<string, mixed>|null $package_snapshot
+ * @property array<string, mixed>|null $install_options
+ * @property string|null $notes
+ * @property int $position
+ */
 #[Fillable([
     'loadout_id',
     'package_id',
