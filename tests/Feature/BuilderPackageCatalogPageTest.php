@@ -84,6 +84,63 @@ class BuilderPackageCatalogPageTest extends TestCase
             );
     }
 
+    public function test_builder_package_catalog_page_shows_recommendations_and_service_warnings(): void
+    {
+        $this->withoutVite();
+
+        $category = PackageCategory::factory()->create([
+            'slug' => 'official-laravel',
+        ]);
+        Package::factory()->for($category, 'category')->create([
+            'name' => 'Laravel Scout',
+            'composer_name' => 'laravel/scout',
+            'is_official' => true,
+            'required_services' => ['meilisearch'],
+        ]);
+        Package::factory()->for($category, 'category')->create([
+            'name' => 'Redis Tooling',
+            'composer_name' => 'vendor/redis-tooling',
+            'required_services' => ['redis'],
+        ]);
+
+        $this->get(route('builder.runtime'))->assertOk();
+        $this->put(route('builder.runtime.update'), [
+            'database' => 'mysql',
+            'cache' => 'database',
+            'queue' => 'redis',
+            'mail' => 'mailpit',
+            'search' => 'meilisearch',
+            'local_runtime' => 'sail',
+        ])->assertRedirect(route('builder.packages'));
+
+        $this->get(route('builder.packages'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('recommendations', 2)
+                ->where('recommendations.0.composer_name', 'laravel/horizon')
+                ->where('recommendations.1.composer_name', 'laravel/scout')
+                ->where('packages.data.0.compatibility_warnings', [])
+                ->where('packages.data.1.compatibility_warnings', []),
+            );
+    }
+
+    public function test_builder_package_catalog_warns_when_required_service_is_not_enabled(): void
+    {
+        $this->withoutVite();
+
+        Package::factory()->create([
+            'name' => 'Redis Tooling',
+            'composer_name' => 'vendor/redis-tooling',
+            'required_services' => ['redis'],
+        ]);
+
+        $this->get(route('builder.packages'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('packages.data.0.compatibility_warnings.0', 'Requires redis; enable it in the runtime step or add it manually.'),
+            );
+    }
+
     public function test_curated_package_can_be_selected_into_the_current_draft_loadout(): void
     {
         $this->withoutVite();

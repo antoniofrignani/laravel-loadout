@@ -44,6 +44,7 @@ type CatalogPackage = {
     category: Category | null;
     tags: string[];
     required_services: string[];
+    compatibility_warnings: string[];
     is_official: boolean;
     is_featured: boolean;
     stars: number;
@@ -91,10 +92,17 @@ type DraftLoadout = {
     custom_packages: CustomLoadoutPackage[];
 };
 
+type Recommendation = {
+    composer_name: string;
+    title: string;
+    reason: string;
+};
+
 type Props = {
     packages: PaginatedPackages;
     categories: Category[];
     loadout: DraftLoadout;
+    recommendations: Recommendation[];
     filters: Filters;
 };
 
@@ -119,6 +127,7 @@ export default function BuilderPackages({
     packages,
     categories,
     loadout,
+    recommendations,
     filters,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -370,6 +379,29 @@ export default function BuilderPackages({
                     </Card>
                 </section>
 
+                {recommendations.length > 0 && (
+                    <section className="grid gap-3 md:grid-cols-3">
+                        {recommendations.map((recommendation) => (
+                            <Card
+                                key={recommendation.composer_name}
+                                className="rounded-lg border-dashed"
+                            >
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base">
+                                        {recommendation.title}
+                                    </CardTitle>
+                                    <CardDescription className="font-mono text-xs">
+                                        {recommendation.composer_name}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="text-sm text-muted-foreground">
+                                    {recommendation.reason}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </section>
+                )}
+
                 <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {packages.data.map((catalogPackage) => (
                         <Card
@@ -433,6 +465,16 @@ export default function BuilderPackages({
                                             'Pending'}
                                     </div>
                                 </div>
+                                {catalogPackage.compatibility_warnings.length >
+                                    0 && (
+                                    <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                                        {catalogPackage.compatibility_warnings.map(
+                                            (warning) => (
+                                                <p key={warning}>{warning}</p>
+                                            ),
+                                        )}
+                                    </div>
+                                )}
                                 <Form {...storeLoadoutPackage.form()}>
                                     {({ processing }) => {
                                         const selected =

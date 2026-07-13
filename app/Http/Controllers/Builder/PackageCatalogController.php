@@ -8,13 +8,18 @@ use App\Models\Package;
 use App\Models\PackageCategory;
 use App\Services\LoadoutBuilder;
 use App\Services\PackageCatalog;
+use App\Services\PackageCompatibilityAdvisor;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PackageCatalogController extends Controller
 {
-    public function __invoke(PackageCatalogRequest $request, PackageCatalog $catalog, LoadoutBuilder $builder): Response
-    {
+    public function __invoke(
+        PackageCatalogRequest $request,
+        PackageCatalog $catalog,
+        LoadoutBuilder $builder,
+        PackageCompatibilityAdvisor $advisor,
+    ): Response {
         $loadout = $builder->currentDraft($request->session(), $request->user());
 
         $packages = $catalog
@@ -38,6 +43,7 @@ class PackageCatalogController extends Controller
                 'usage_count' => $package->usage_count,
                 'last_source_update_at' => $package->last_source_update_at?->toDateString(),
                 'stats_refreshed_at' => $package->stats_refreshed_at?->toDateString(),
+                'compatibility_warnings' => $advisor->warnings($package, $loadout),
             ]);
 
         return Inertia::render('builder/packages', [
@@ -59,6 +65,7 @@ class PackageCatalogController extends Controller
                     ->orderBy('position')
                     ->get(['id', 'display_name', 'composer_name', 'source_url']),
             ],
+            'recommendations' => $advisor->recommendations($loadout),
             'filters' => $request->filters(),
         ]);
     }

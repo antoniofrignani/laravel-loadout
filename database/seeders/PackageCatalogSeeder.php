@@ -20,6 +20,7 @@ class PackageCatalogSeeder extends Seeder
             ['name' => 'Billing and payments', 'description' => 'Subscriptions, invoices, checkouts, and payments.'],
             ['name' => 'Media and uploads', 'description' => 'File uploads, media libraries, and image handling.'],
             ['name' => 'Search', 'description' => 'Application search and indexing packages.'],
+            ['name' => 'Official Laravel', 'description' => 'First-party Laravel packages for common framework features.'],
             ['name' => 'Testing and quality', 'description' => 'Testing helpers, static analysis, and code quality tools.'],
             ['name' => 'Developer experience', 'description' => 'Productivity, debugging, and local development helpers.'],
             ['name' => 'Observability and debugging', 'description' => 'Runtime debugging, monitoring, and diagnostics.'],
@@ -38,6 +39,45 @@ class PackageCatalogSeeder extends Seeder
         });
 
         $packages = [
+            [
+                'category' => 'official-laravel',
+                'name' => 'Laravel Sanctum',
+                'composer_name' => 'laravel/sanctum',
+                'description' => 'Official lightweight API token and SPA authentication package.',
+                'tags' => ['official', 'api', 'authentication'],
+                'is_official' => true,
+                'migration_commands' => ['php artisan migrate'],
+            ],
+            [
+                'category' => 'official-laravel',
+                'name' => 'Laravel Horizon',
+                'composer_name' => 'laravel/horizon',
+                'description' => 'Official dashboard and monitoring for Redis queues.',
+                'tags' => ['official', 'queues', 'redis'],
+                'is_official' => true,
+                'required_services' => ['redis'],
+                'post_install_commands' => ['php artisan horizon:install'],
+            ],
+            [
+                'category' => 'official-laravel',
+                'name' => 'Laravel Scout',
+                'composer_name' => 'laravel/scout',
+                'description' => 'Official driver-based full-text search integration for Eloquent.',
+                'tags' => ['official', 'search', 'meilisearch'],
+                'is_official' => true,
+                'required_services' => ['meilisearch'],
+                'publish_commands' => ['php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"'],
+            ],
+            [
+                'category' => 'official-laravel',
+                'name' => 'Laravel Telescope',
+                'composer_name' => 'laravel/telescope',
+                'description' => 'Official local observability assistant for requests, exceptions, jobs, and database queries.',
+                'tags' => ['official', 'debugging', 'observability'],
+                'is_official' => true,
+                'post_install_commands' => ['php artisan telescope:install'],
+                'migration_commands' => ['php artisan migrate'],
+            ],
             [
                 'category' => 'authentication-and-authorization',
                 'name' => 'Laravel Permission',
@@ -112,6 +152,7 @@ class PackageCatalogSeeder extends Seeder
                     'laravel_version_constraints' => ['^13.0'],
                     'php_version_constraints' => ['^8.3'],
                     'tags' => $package['tags'],
+                    'is_official' => $package['is_official'] ?? false,
                     'is_featured' => true,
                 ],
             );

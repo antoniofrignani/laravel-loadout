@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property int $stars
  * @property int $downloads
  * @property int $usage_count
+ * @property array<int, string>|null $required_services
  * @property Carbon|null $last_release_at
  * @property Carbon|null $last_source_update_at
  * @property Carbon|null $stats_refreshed_at
