@@ -1,5 +1,13 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Boxes, PackageCheck, Plus, Sparkles, Trash2 } from 'lucide-react';
+import {
+    ArrowLeft,
+    Download,
+    PackageCheck,
+    Plus,
+    Sparkles,
+    Star,
+    Trash2,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,7 +26,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { show as showProfile } from '@/routes/profiles';
 import {
     importMethod as importCollection,
     index as collectionsIndex,
@@ -27,6 +34,7 @@ import {
     destroy as destroyItem,
     store as storeItem,
 } from '@/routes/package-collections/items';
+import { show as showProfile } from '@/routes/profiles';
 
 type Collection = {
     id: number;
@@ -211,48 +219,53 @@ export default function PackageCollectionShow({
                             </Card>
                         )}
 
-                        <div className="grid gap-4">
+                        <div className="grid gap-3">
                             {items.length > 0 ? (
                                 items.map((item) => (
                                     <Card key={item.id} className="rounded-xl">
-                                        <CardHeader>
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <Badge variant="outline">
-                                                    <PackageCheck className="size-3.5" />
-                                                    {item.package.category ??
-                                                        'Package'}
-                                                </Badge>
-                                            </div>
-                                            <CardTitle>
-                                                {item.package.name}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {item.package.description ??
-                                                    item.package.composer_name}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
-                                                <Metric
-                                                    label="Composer"
-                                                    value={
-                                                        item.package
-                                                            .composer_name ??
-                                                        'N/A'
-                                                    }
-                                                />
-                                                <Metric
-                                                    label="Stars"
-                                                    value={String(
-                                                        item.package.stars,
-                                                    )}
-                                                />
-                                                <Metric
-                                                    label="Downloads"
-                                                    value={String(
-                                                        item.package.downloads,
-                                                    )}
-                                                />
+                                        <CardContent className="space-y-3 p-4">
+                                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                                <div className="min-w-0">
+                                                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                                                        <Badge variant="outline">
+                                                            <PackageCheck className="size-3.5" />
+                                                            {item.package
+                                                                .category ??
+                                                                'Package'}
+                                                        </Badge>
+                                                        <span className="font-mono text-xs text-muted-foreground">
+                                                            {item.package
+                                                                .composer_name ??
+                                                                'N/A'}
+                                                        </span>
+                                                    </div>
+                                                    <h2 className="truncate text-lg font-semibold">
+                                                        {item.package.name}
+                                                    </h2>
+                                                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                                        {item.package
+                                                            .description ??
+                                                            item.package
+                                                                .composer_name}
+                                                    </p>
+                                                </div>
+                                                <div className="grid shrink-0 grid-cols-2 gap-2 text-xs text-muted-foreground">
+                                                    <Metric
+                                                        icon={Star}
+                                                        label="Stars"
+                                                        value={compactNumber(
+                                                            item.package.stars,
+                                                        )}
+                                                    />
+                                                    <Metric
+                                                        icon={Download}
+                                                        label="Downloads"
+                                                        value={compactNumber(
+                                                            item.package
+                                                                .downloads,
+                                                        )}
+                                                    />
+                                                </div>
                                             </div>
                                             {item.notes && (
                                                 <p className="rounded-lg bg-muted p-3 text-sm">
@@ -305,11 +318,29 @@ export default function PackageCollectionShow({
     );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function compactNumber(value: number) {
+    return new Intl.NumberFormat('en', {
+        maximumFractionDigits: 1,
+        notation: 'compact',
+    }).format(value);
+}
+
+function Metric({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    value: string;
+}) {
     return (
-        <div className="rounded-lg bg-muted p-3">
-            <div className="text-xs">{label}</div>
-            <div className="mt-1 font-medium text-foreground">{value}</div>
+        <div className="rounded-lg bg-muted px-3 py-2">
+            <div className="flex items-center gap-1.5">
+                <Icon className="size-3.5" />
+                {label}
+            </div>
+            <div className="mt-1 font-semibold text-foreground">{value}</div>
         </div>
     );
 }

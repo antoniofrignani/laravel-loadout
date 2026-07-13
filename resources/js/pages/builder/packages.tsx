@@ -1,15 +1,17 @@
-import { FormEvent, useState } from 'react';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     ArrowRight,
     Download,
+    PackageCheck,
     PackagePlus,
     Plus,
     RefreshCw,
     Search,
     Star,
 } from 'lucide-react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 
 import { store as storeCustomPackage } from '@/actions/App/Http/Controllers/Builder/CustomPackageController';
 import {
@@ -154,6 +156,13 @@ function filterValue(filters: Filters | undefined, key: keyof Filters) {
     return filters[key];
 }
 
+function compactNumber(value: number) {
+    return new Intl.NumberFormat('en', {
+        maximumFractionDigits: 1,
+        notation: 'compact',
+    }).format(value);
+}
+
 export default function BuilderPackages({
     packages,
     categories,
@@ -243,20 +252,23 @@ export default function BuilderPackages({
                     </div>
                 </header>
 
-                <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+                <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
                     <Card className="rounded-lg">
-                        <CardHeader>
-                            <CardTitle>Catalog filters</CardTitle>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base">
+                                Find packages
+                            </CardTitle>
                             <CardDescription>
-                                Search and sort by stored package snapshots.
+                                Search, filter, and sort by hourly stats
+                                snapshots.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form
-                                className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+                                className="grid gap-3 md:grid-cols-2 2xl:grid-cols-6"
                                 onSubmit={applyFilters}
                             >
-                                <label className="flex flex-col gap-1.5 xl:col-span-2">
+                                <label className="flex flex-col gap-1.5 md:col-span-2 2xl:col-span-2">
                                     <span className="text-xs font-medium text-muted-foreground">
                                         Search
                                     </span>
@@ -345,7 +357,7 @@ export default function BuilderPackages({
                                     </Select>
                                 </label>
 
-                                <label className="flex flex-col gap-1.5 md:col-span-2 xl:col-span-2">
+                                <label className="flex flex-col gap-1.5 md:col-span-2 2xl:col-span-1">
                                     <span className="text-xs font-medium text-muted-foreground">
                                         Required service
                                     </span>
@@ -358,10 +370,10 @@ export default function BuilderPackages({
                                     />
                                 </label>
 
-                                <div className="flex items-end gap-2 md:col-span-2 xl:col-span-3">
+                                <div className="flex items-end gap-2 md:col-span-2 2xl:col-span-1">
                                     <Button type="submit">
                                         <Search className="size-4" />
-                                        Apply filters
+                                        Apply
                                     </Button>
                                     <Button
                                         type="button"
@@ -378,160 +390,184 @@ export default function BuilderPackages({
                     </Card>
 
                     <Card className="rounded-lg">
-                        <CardHeader>
-                            <CardTitle>Custom package</CardTitle>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center justify-between gap-3 text-base">
+                                Selected loadout
+                                <Badge variant="secondary">
+                                    {selectedPackages.length +
+                                        customPackages.length}
+                                </Badge>
+                            </CardTitle>
                             <CardDescription>
-                                Attach an unlisted package to this loadout.
+                                Compact controls for long dependency lists.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <Form
-                                className="flex flex-col gap-3"
-                                onSuccess={() => setCustomPackageUrl('')}
-                                options={{ preserveScroll: true }}
-                                {...storeCustomPackage.form()}
-                            >
-                                {({ errors, processing }) => (
-                                    <>
-                                        <Input
-                                            name="package_url"
-                                            value={customPackageUrl}
-                                            onChange={(event) =>
-                                                setCustomPackageUrl(
-                                                    event.target.value,
-                                                )
-                                            }
-                                            placeholder="https://packagist.org/packages/vendor/name"
-                                        />
-                                        {errors.package_url && (
-                                            <p className="text-sm text-destructive">
-                                                {errors.package_url}
-                                            </p>
-                                        )}
-                                        <Button
-                                            disabled={
-                                                processing || !customPackageUrl
-                                            }
-                                        >
-                                            <Plus className="size-4" />
-                                            Add to loadout
-                                        </Button>
-                                    </>
-                                )}
-                            </Form>
-                            {customPackages.length > 0 && (
-                                <div className="mt-4 flex flex-col gap-2 border-t pt-4">
-                                    {customPackages.map((pkg) => (
+                        <CardContent className="space-y-4">
+                            <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
+                                {selectedPackages.length > 0 ? (
+                                    selectedPackages.map((selectedPackage) => (
                                         <div
-                                            key={pkg.id}
-                                            className="rounded-md bg-muted px-3 py-2 text-sm"
+                                            key={selectedPackage.id}
+                                            className="rounded-md border bg-background p-3"
                                         >
-                                            <div className="font-medium">
-                                                {pkg.display_name}
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <div className="truncate text-sm font-medium">
+                                                        {
+                                                            selectedPackage.display_name
+                                                        }
+                                                    </div>
+                                                    <div className="truncate font-mono text-xs text-muted-foreground">
+                                                        {
+                                                            selectedPackage.composer_name
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <PackageCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                                             </div>
-                                            <div className="font-mono text-xs text-muted-foreground">
-                                                {pkg.composer_name}
-                                            </div>
+                                            <Form
+                                                className="mt-3 grid gap-2"
+                                                options={{
+                                                    preserveScroll: true,
+                                                }}
+                                                {...updateLoadoutPackage.form(
+                                                    selectedPackage.id,
+                                                )}
+                                            >
+                                                {({ errors, processing }) => (
+                                                    <>
+                                                        <Select
+                                                            defaultValue={
+                                                                selectedPackage
+                                                                    .install_options
+                                                                    ?.dev_dependency
+                                                                    ? '1'
+                                                                    : '0'
+                                                            }
+                                                            name="install_as_dev"
+                                                        >
+                                                            <SelectTrigger className="h-8 w-full text-xs">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="0">
+                                                                    Production
+                                                                </SelectItem>
+                                                                <SelectItem value="1">
+                                                                    Dev
+                                                                    dependency
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        {errors.install_as_dev && (
+                                                            <p className="text-xs text-destructive">
+                                                                {
+                                                                    errors.install_as_dev
+                                                                }
+                                                            </p>
+                                                        )}
+                                                        <Textarea
+                                                            className="min-h-16 text-xs"
+                                                            name="notes"
+                                                            defaultValue={
+                                                                selectedPackage.notes ??
+                                                                ''
+                                                            }
+                                                            placeholder="Package setup notes"
+                                                        />
+                                                        {errors.notes && (
+                                                            <p className="text-xs text-destructive">
+                                                                {errors.notes}
+                                                            </p>
+                                                        )}
+                                                        <Button
+                                                            className="h-8"
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                            size="sm"
+                                                            variant="outline"
+                                                        >
+                                                            Save notes
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </Form>
                                         </div>
-                                    ))}
+                                    ))
+                                ) : (
+                                    <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                                        Select curated packages from the catalog.
+                                    </div>
+                                )}
+                            </div>
+
+                            {customPackages.length > 0 && (
+                                <div className="space-y-2 border-t pt-4">
+                                    <div className="text-xs font-medium text-muted-foreground">
+                                        Custom packages
+                                    </div>
+                                    <div className="max-h-32 space-y-2 overflow-y-auto pr-1">
+                                        {customPackages.map((pkg) => (
+                                            <div
+                                                key={pkg.id}
+                                                className="rounded-md bg-muted px-3 py-2 text-sm"
+                                            >
+                                                <div className="truncate font-medium">
+                                                    {pkg.display_name}
+                                                </div>
+                                                <div className="truncate font-mono text-xs text-muted-foreground">
+                                                    {pkg.composer_name}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
+
+                            <div className="border-t pt-4">
+                                <div className="mb-2 text-xs font-medium text-muted-foreground">
+                                    Add custom package
+                                </div>
+                                <Form
+                                    className="flex flex-col gap-3"
+                                    onSuccess={() => setCustomPackageUrl('')}
+                                    options={{ preserveScroll: true }}
+                                    {...storeCustomPackage.form()}
+                                >
+                                    {({ errors, processing }) => (
+                                        <>
+                                            <Input
+                                                name="package_url"
+                                                value={customPackageUrl}
+                                                onChange={(event) =>
+                                                    setCustomPackageUrl(
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="https://packagist.org/packages/vendor/name"
+                                            />
+                                            {errors.package_url && (
+                                                <p className="text-xs text-destructive">
+                                                    {errors.package_url}
+                                                </p>
+                                            )}
+                                            <Button
+                                                disabled={
+                                                    processing ||
+                                                    !customPackageUrl
+                                                }
+                                            >
+                                                <Plus className="size-4" />
+                                                Add to loadout
+                                            </Button>
+                                        </>
+                                    )}
+                                </Form>
+                            </div>
                         </CardContent>
                     </Card>
                 </section>
-
-                {selectedPackages.length > 0 && (
-                    <section className="grid gap-3 lg:grid-cols-2">
-                        {selectedPackages.map((selectedPackage) => (
-                            <Card
-                                key={selectedPackage.id}
-                                className="rounded-lg"
-                            >
-                                <CardHeader>
-                                    <CardTitle className="text-base">
-                                        Configure {selectedPackage.display_name}
-                                    </CardTitle>
-                                    <CardDescription className="font-mono text-xs">
-                                        {selectedPackage.composer_name}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Form
-                                        className="grid gap-3"
-                                        options={{ preserveScroll: true }}
-                                        {...updateLoadoutPackage.form(
-                                            selectedPackage.id,
-                                        )}
-                                    >
-                                        {({ errors, processing }) => (
-                                            <>
-                                                <label className="grid gap-1.5">
-                                                    <span className="text-xs font-medium text-muted-foreground">
-                                                        Install target
-                                                    </span>
-                                                    <Select
-                                                        defaultValue={
-                                                            selectedPackage
-                                                                .install_options
-                                                                ?.dev_dependency
-                                                                ? '1'
-                                                                : '0'
-                                                        }
-                                                        name="install_as_dev"
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="0">
-                                                                Production
-                                                                dependency
-                                                            </SelectItem>
-                                                            <SelectItem value="1">
-                                                                Dev dependency
-                                                            </SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {errors.install_as_dev && (
-                                                        <p className="text-sm text-destructive">
-                                                            {
-                                                                errors.install_as_dev
-                                                            }
-                                                        </p>
-                                                    )}
-                                                </label>
-                                                <label className="grid gap-1.5">
-                                                    <span className="text-xs font-medium text-muted-foreground">
-                                                        Setup notes
-                                                    </span>
-                                                    <Textarea
-                                                        name="notes"
-                                                        defaultValue={
-                                                            selectedPackage.notes ??
-                                                            ''
-                                                        }
-                                                        placeholder="Mention config publishes, manual env vars, or package-specific setup."
-                                                    />
-                                                    {errors.notes && (
-                                                        <p className="text-sm text-destructive">
-                                                            {errors.notes}
-                                                        </p>
-                                                    )}
-                                                </label>
-                                                <Button
-                                                    disabled={processing}
-                                                    size="sm"
-                                                >
-                                                    Save package notes
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Form>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </section>
-                )}
 
                 {packageRecommendations.length > 0 && (
                     <section className="grid gap-3 md:grid-cols-3">
@@ -600,19 +636,19 @@ export default function BuilderPackages({
                     </section>
                 )}
 
-                <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                     {catalogPackages.map((catalogPackage) => (
                         <Card
                             key={catalogPackage.id}
-                            className="rounded-lg py-5"
+                            className="flex flex-col rounded-lg py-4"
                         >
-                            <CardHeader className="gap-3">
+                            <CardHeader className="gap-2 px-4 pb-3">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <CardTitle className="text-lg leading-tight">
+                                        <CardTitle className="line-clamp-1 text-base leading-tight">
                                             {catalogPackage.name}
                                         </CardTitle>
-                                        <CardDescription className="mt-1 font-mono text-xs">
+                                        <CardDescription className="mt-1 truncate font-mono text-xs">
                                             {catalogPackage.composer_name ??
                                                 catalogPackage.npm_name}
                                         </CardDescription>
@@ -627,7 +663,7 @@ export default function BuilderPackages({
                                     {catalogPackage.description}
                                 </p>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-4">
+                            <CardContent className="mt-auto flex flex-col gap-3 px-4">
                                 <div className="flex flex-wrap gap-2">
                                     {catalogPackage.category && (
                                         <Badge variant="outline">
@@ -648,24 +684,28 @@ export default function BuilderPackages({
                                         ),
                                     )}
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 text-sm">
-                                    <div className="flex items-center gap-1.5">
-                                        <Star className="size-4 text-muted-foreground" />
-                                        {catalogPackage.stars.toLocaleString()}
+                                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                                        <Star className="size-3.5" />
+                                        {compactNumber(catalogPackage.stars)}
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Download className="size-4 text-muted-foreground" />
-                                        {catalogPackage.downloads.toLocaleString()}
+                                    <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                                        <Download className="size-3.5" />
+                                        {compactNumber(
+                                            catalogPackage.downloads,
+                                        )}
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <RefreshCw className="size-4 text-muted-foreground" />
-                                        {catalogPackage.stats_refreshed_at ??
-                                            'Pending'}
+                                    <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                                        <RefreshCw className="size-3.5" />
+                                        <span className="truncate">
+                                            {catalogPackage.stats_refreshed_at ??
+                                                'Pending'}
+                                        </span>
                                     </div>
                                 </div>
                                 {(catalogPackage.compatibility_warnings ?? []).length >
                                     0 && (
-                                    <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                                    <div className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
                                         {(catalogPackage.compatibility_warnings ?? []).map(
                                             (warning) => (
                                                 <p key={warning}>{warning}</p>

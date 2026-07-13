@@ -11,10 +11,16 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { index as loadoutsIndex } from '@/routes/loadouts';
 import {
     destroy,
-    index as collaboratorsIndex,
     store,
 } from '@/routes/loadouts/collaborators';
 
@@ -107,18 +113,22 @@ export default function LoadoutCollaborators({
                                             <span className="text-sm font-medium">
                                                 Role
                                             </span>
-                                            <select
+                                            <Select
                                                 name="role"
                                                 defaultValue="viewer"
-                                                className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                             >
-                                                <option value="viewer">
-                                                    Viewer
-                                                </option>
-                                                <option value="editor">
-                                                    Editor
-                                                </option>
-                                            </select>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="viewer">
+                                                        Viewer
+                                                    </SelectItem>
+                                                    <SelectItem value="editor">
+                                                        Editor
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             {errors.role && (
                                                 <span className="text-sm text-destructive">
                                                     {errors.role}

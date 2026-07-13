@@ -11,6 +11,13 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { discover, home } from '@/routes';
 import { project } from '@/routes/builder';
 import { clone, show } from '@/routes/loadouts';
@@ -136,20 +143,24 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                 <span className="text-sm font-medium">
                                     Sort
                                 </span>
-                                <select
+                                <Select
                                     name="sort"
                                     defaultValue={filters.sort}
-                                    className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 >
-                                    {sortOptions.map((option) => (
-                                        <option
-                                            key={option.value}
-                                            value={option.value}
-                                        >
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {sortOptions.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
 
                             <div className="flex gap-2">
@@ -168,7 +179,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                             {loadouts.map((loadout) => (
                                 <Card
                                     key={loadout.id}
-                                    className="flex rounded-2xl"
+                                    className="flex flex-col rounded-2xl"
                                 >
                                     <CardHeader>
                                         <div className="flex flex-wrap items-center gap-2">

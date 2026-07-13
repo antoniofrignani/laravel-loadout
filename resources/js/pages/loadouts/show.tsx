@@ -170,17 +170,17 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                     Selected dependencies in this loadout.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-2">
+                            <CardContent className="max-h-[520px] space-y-2 overflow-y-auto pr-2">
                                 {packages.length > 0 ? (
                                     packages.map((pkg) => (
                                         <div
                                             key={pkg.id}
                                             className="rounded-md bg-muted p-3 text-sm"
                                         >
-                                            <div className="font-medium">
+                                            <div className="truncate font-medium">
                                                 {pkg.display_name}
                                             </div>
-                                            <div className="font-mono text-xs text-muted-foreground">
+                                            <div className="truncate font-mono text-xs text-muted-foreground">
                                                 {pkg.composer_name}
                                             </div>
                                             {pkg.is_custom && (
