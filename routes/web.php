@@ -10,6 +10,7 @@ use App\Http\Controllers\Builder\ReviewController;
 use App\Http\Controllers\Builder\RuntimeController;
 use App\Http\Controllers\Builder\StarterKitController;
 use App\Http\Controllers\LoadoutCloneController;
+use App\Http\Controllers\LoadoutDiscoveryController;
 use App\Http\Controllers\LoadoutDownloadController;
 use App\Http\Controllers\LoadoutLibraryController;
 use App\Http\Controllers\LoadoutResumeController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\PackageSuggestionModerationController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+Route::get('discover', LoadoutDiscoveryController::class)->name('discover');
 Route::get('builder/project', [ProjectBasicsController::class, 'show'])->name('builder.project');
 Route::put('builder/project', [ProjectBasicsController::class, 'update'])->name('builder.project.update');
 Route::get('builder/starter', [StarterKitController::class, 'show'])->name('builder.starter');
