@@ -356,5 +356,6 @@ This is the core value of the product and should be treated as a first-class sea
 - Completed: public builder package-selection route and Inertia page backed by the package catalog query layer.
 - Completed: session-backed draft loadout creation, curated package selection, loadout-only custom package URL entry, package suggestion persistence, and selected/custom package display on the package-selection page.
 - Completed: generated Wayfinder route/action helpers for the builder package endpoints.
+- Completed: package suggestion moderation emails with signed approve/ignore links, admin email configuration, and package promotion into the curated catalog.
 - Completed: backend and frontend verification with `vendor/bin/sail composer test` and `vendor/bin/sail yarn run build`.
-- Next: implement package suggestion moderation emails with signed approve/ignore links, then add the hourly package stat snapshot refresh job.
+- Next: implement the hourly package stat snapshot refresh job.

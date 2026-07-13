@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\PackageSuggestionSubmitted;
 use App\Models\Loadout;
 use App\Models\LoadoutPackage;
 use App\Models\Package;
 use App\Models\PackageCategory;
 use App\Models\PackageSuggestion;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -112,6 +114,7 @@ class BuilderPackageCatalogPageTest extends TestCase
     public function test_custom_package_url_is_added_only_to_the_current_draft_loadout(): void
     {
         $this->withoutVite();
+        Mail::fake();
 
         $this->get(route('builder.packages'))->assertOk();
 
@@ -130,6 +133,8 @@ class BuilderPackageCatalogPageTest extends TestCase
         $this->assertSame($suggestion->id, $selection->package_suggestion_id);
         $this->assertTrue($selection->is_custom);
         $this->assertNull($selection->package_id);
+
+        Mail::assertQueued(PackageSuggestionSubmitted::class, fn (PackageSuggestionSubmitted $mail) => $mail->suggestion->is($suggestion));
     }
 
     public function test_custom_package_url_must_be_recognized(): void
