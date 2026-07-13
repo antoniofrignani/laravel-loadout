@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\LoadoutVisibility;
 use App\Models\Loadout;
+use App\Models\PackageCollection;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,6 +33,20 @@ class CurationProfileController extends Controller
                 'published_at' => $loadout->published_at?->toFormattedDateString(),
             ]);
 
+        $collections = PackageCollection::query()
+            ->whereBelongsTo($user)
+            ->where('visibility', 'public')
+            ->withCount('items')
+            ->latest()
+            ->get()
+            ->map(fn (PackageCollection $collection): array => [
+                'id' => $collection->id,
+                'title' => $collection->title,
+                'slug' => $collection->slug,
+                'description' => $collection->description,
+                'items_count' => (int) $collection->getAttribute('items_count'),
+            ]);
+
         return Inertia::render('profiles/show', [
             'profile' => [
                 'name' => $user->name,
@@ -40,8 +55,10 @@ class CurationProfileController extends Controller
                 'joined_at' => $user->created_at?->toFormattedDateString(),
             ],
             'loadouts' => $loadouts,
+            'collections' => $collections,
             'stats' => [
                 'public_loadouts' => $loadouts->count(),
+                'public_collections' => $collections->count(),
                 'total_stars' => $loadouts->sum('star_count'),
                 'total_clones' => $loadouts->sum('clone_count'),
             ],

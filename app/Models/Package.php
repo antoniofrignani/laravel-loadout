@@ -111,6 +111,14 @@ class Package extends Model
     }
 
     /**
+     * @return HasMany<PackageCollectionItem, $this>
+     */
+    public function collectionItems(): HasMany
+    {
+        return $this->hasMany(PackageCollectionItem::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

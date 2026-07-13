@@ -18,12 +18,15 @@ use App\Http\Controllers\LoadoutLibraryController;
 use App\Http\Controllers\LoadoutResumeController;
 use App\Http\Controllers\LoadoutShowController;
 use App\Http\Controllers\LoadoutStarController;
+use App\Http\Controllers\PackageCollectionController;
+use App\Http\Controllers\PackageCollectionItemController;
 use App\Http\Controllers\PackageSuggestionModerationController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::get('discover', LoadoutDiscoveryController::class)->name('discover');
 Route::get('u/{user:profile_slug}', CurationProfileController::class)->name('profiles.show');
+Route::get('package-collections/{package_collection:slug}', [PackageCollectionController::class, 'show'])->name('package-collections.show');
 Route::get('builder/project', [ProjectBasicsController::class, 'show'])->name('builder.project');
 Route::put('builder/project', [ProjectBasicsController::class, 'update'])->name('builder.project.update');
 Route::get('builder/starter', [StarterKitController::class, 'show'])->name('builder.starter');
@@ -49,6 +52,10 @@ Route::get('package-suggestions/{package_suggestion}/ignore', [PackageSuggestion
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('package-collections', [PackageCollectionController::class, 'index'])->name('package-collections.index');
+    Route::post('package-collections', [PackageCollectionController::class, 'store'])->name('package-collections.store');
+    Route::post('package-collections/{package_collection:slug}/items', [PackageCollectionItemController::class, 'store'])->name('package-collections.items.store');
+    Route::delete('package-collections/{package_collection:slug}/items/{item}', [PackageCollectionItemController::class, 'destroy'])->name('package-collections.items.destroy');
     Route::get('loadouts', LoadoutLibraryController::class)->name('loadouts.index');
     Route::post('loadouts/{loadout:slug}/resume', LoadoutResumeController::class)->name('loadouts.resume');
     Route::get('loadouts/{loadout:slug}/collaborators', [LoadoutCollaboratorController::class, 'index'])->name('loadouts.collaborators.index');

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\LoadoutVisibility;
 use App\Models\Loadout;
 use App\Models\LoadoutPackage;
+use App\Models\PackageCollection;
+use App\Models\PackageCollectionItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -36,6 +38,15 @@ class CurationProfileTest extends TestCase
             'visibility' => LoadoutVisibility::Private,
             'published_at' => null,
         ]);
+        $publicCollection = PackageCollection::factory()->for($user)->public()->create([
+            'title' => 'Backend Picks',
+            'slug' => 'backend-picks',
+        ]);
+        PackageCollectionItem::factory()->for($publicCollection, 'collection')->count(2)->create();
+        PackageCollection::factory()->for($user)->create([
+            'title' => 'Private Picks',
+            'slug' => 'private-picks',
+        ]);
 
         $this->get(route('profiles.show', ['user' => $user->profile_slug]))
             ->assertOk()
@@ -47,7 +58,11 @@ class CurationProfileTest extends TestCase
                 ->has('loadouts', 1)
                 ->where('loadouts.0.title', 'SaaS Starter')
                 ->where('loadouts.0.packages_count', 2)
+                ->has('collections', 1)
+                ->where('collections.0.title', 'Backend Picks')
+                ->where('collections.0.items_count', 2)
                 ->where('stats.public_loadouts', 1)
+                ->where('stats.public_collections', 1)
                 ->where('stats.total_stars', 8)
                 ->where('stats.total_clones', 3),
             );

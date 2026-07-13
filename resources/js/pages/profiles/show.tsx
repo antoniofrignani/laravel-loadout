@@ -13,6 +13,7 @@ import {
 import { discover } from '@/routes';
 import { project } from '@/routes/builder';
 import { show as showLoadout } from '@/routes/loadouts';
+import { show as showCollection } from '@/routes/package-collections';
 
 type Profile = {
     name: string;
@@ -32,17 +33,32 @@ type PublicLoadout = {
     published_at: string | null;
 };
 
+type PublicCollection = {
+    id: number;
+    title: string;
+    slug: string;
+    description: string | null;
+    items_count: number;
+};
+
 type Props = {
     profile: Profile;
     loadouts: PublicLoadout[];
+    collections: PublicCollection[];
     stats: {
         public_loadouts: number;
+        public_collections: number;
         total_stars: number;
         total_clones: number;
     };
 };
 
-export default function ProfileShow({ profile, loadouts, stats }: Props) {
+export default function ProfileShow({
+    profile,
+    loadouts,
+    collections,
+    stats,
+}: Props) {
     return (
         <>
             <Head title={`${profile.name} - Laravel Loadout`} />
@@ -96,6 +112,11 @@ export default function ProfileShow({ profile, loadouts, stats }: Props) {
                                     icon={Boxes}
                                 />
                                 <StatCard
+                                    label="Collections"
+                                    value={stats.public_collections}
+                                    icon={PackageCheck}
+                                />
+                                <StatCard
                                     label="Stars earned"
                                     value={stats.total_stars}
                                     icon={Star}
@@ -108,6 +129,47 @@ export default function ProfileShow({ profile, loadouts, stats }: Props) {
                             </div>
                         </div>
                     </header>
+
+                    {collections.length > 0 && (
+                        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            {collections.map((collection) => (
+                                <Card
+                                    key={collection.id}
+                                    className="rounded-2xl border-dashed"
+                                >
+                                    <CardHeader>
+                                        <Badge
+                                            variant="outline"
+                                            className="w-fit"
+                                        >
+                                            Package collection
+                                        </Badge>
+                                        <CardTitle>
+                                            {collection.title}
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {collection.description ??
+                                                'A curated Laravel package shortlist.'}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex items-center justify-between gap-3">
+                                        <span className="text-sm text-muted-foreground">
+                                            {collection.items_count} packages
+                                        </span>
+                                        <Button asChild variant="outline">
+                                            <Link
+                                                href={showCollection.url(
+                                                    collection.slug,
+                                                )}
+                                            >
+                                                View collection
+                                            </Link>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </section>
+                    )}
 
                     {loadouts.length > 0 ? (
                         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Boxes, FolderGit2, LayoutGrid, Search } from 'lucide-react';
+import { BookOpen, Boxes, FolderGit2, LayoutGrid, PackagePlus, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard, discover } from '@/routes';
 import { index as loadoutsIndex } from '@/routes/loadouts';
+import { index as packageCollectionsIndex } from '@/routes/package-collections';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -27,6 +28,11 @@ const mainNavItems: NavItem[] = [
         title: 'My Loadouts',
         href: loadoutsIndex(),
         icon: Boxes,
+    },
+    {
+        title: 'Package Collections',
+        href: packageCollectionsIndex(),
+        icon: PackagePlus,
     },
     {
         title: 'Discover',
