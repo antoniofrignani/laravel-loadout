@@ -219,6 +219,7 @@ class BuilderPackageCatalogPageTest extends TestCase
         $this->assertSame($package->id, $selection->package_id);
         $this->assertFalse($selection->is_custom);
         $this->assertSame('composer require spatie/laravel-permission', $selection->package_snapshot['install_command']);
+        $this->assertSame(['dev_dependency' => false], $selection->install_options);
 
         $this->get(route('builder.packages'))
             ->assertOk()
@@ -226,6 +227,34 @@ class BuilderPackageCatalogPageTest extends TestCase
                 ->has('loadout.selected_packages', 1)
                 ->where('loadout.selected_packages.0.composer_name', 'spatie/laravel-permission'),
             );
+    }
+
+    public function test_development_package_defaults_to_dev_dependency_when_selected(): void
+    {
+        $this->withoutVite();
+
+        $category = PackageCategory::factory()->create([
+            'slug' => 'developer-experience',
+        ]);
+        $package = Package::factory()->for($category, 'category')->create([
+            'name' => 'Laravel Debugbar',
+            'composer_name' => 'barryvdh/laravel-debugbar',
+            'description' => 'Add a local debugging toolbar.',
+            'tags' => ['debugging', 'local-development'],
+        ]);
+
+        $this->get(route('builder.packages'))->assertOk();
+
+        $this
+            ->from(route('builder.packages'))
+            ->post(route('builder.packages.store'), [
+                'package_id' => $package->id,
+            ])
+            ->assertRedirect(route('builder.packages'));
+
+        $selection = LoadoutPackage::query()->firstOrFail();
+
+        $this->assertSame(['dev_dependency' => true], $selection->install_options);
     }
 
     public function test_recommended_official_package_can_be_selected_by_composer_name(): void
@@ -257,6 +286,7 @@ class BuilderPackageCatalogPageTest extends TestCase
         $this->assertSame('Laravel Horizon', $selection->display_name);
         $this->assertTrue($package->is_official);
         $this->assertSame(['redis'], $selection->package_snapshot['required_services']);
+        $this->assertSame(['dev_dependency' => false], $selection->install_options);
     }
 
     public function test_selected_package_notes_and_install_options_can_be_configured(): void
@@ -334,8 +364,29 @@ class BuilderPackageCatalogPageTest extends TestCase
         $this->assertSame($suggestion->id, $selection->package_suggestion_id);
         $this->assertTrue($selection->is_custom);
         $this->assertNull($selection->package_id);
+        $this->assertSame(['dev_dependency' => false], $selection->install_options);
 
         Mail::assertQueued(PackageSuggestionSubmitted::class, fn (PackageSuggestionSubmitted $mail) => $mail->suggestion->is($suggestion));
+    }
+
+    public function test_custom_development_package_defaults_to_dev_dependency(): void
+    {
+        $this->withoutVite();
+        Mail::fake();
+
+        $this->get(route('builder.packages'))->assertOk();
+
+        $this
+            ->from(route('builder.packages'))
+            ->post(route('builder.custom-packages.store'), [
+                'package_url' => 'https://packagist.org/packages/vendor/debug-helper',
+            ])
+            ->assertRedirect(route('builder.packages'));
+
+        $selection = LoadoutPackage::query()->firstOrFail();
+
+        $this->assertTrue($selection->is_custom);
+        $this->assertSame(['dev_dependency' => true], $selection->install_options);
     }
 
     public function test_custom_package_url_must_be_recognized(): void

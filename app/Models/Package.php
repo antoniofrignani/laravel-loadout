@@ -26,11 +26,13 @@ use Illuminate\Support\Carbon;
  * @property int $downloads
  * @property int $usage_count
  * @property array<int, string>|null $required_services
+ * @property array<int, string>|null $tags
  * @property Carbon|null $last_release_at
  * @property Carbon|null $last_source_update_at
  * @property Carbon|null $stats_refreshed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property PackageCategory|null $category
  */
 #[Fillable([
     'package_category_id',

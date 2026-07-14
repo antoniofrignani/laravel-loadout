@@ -15,7 +15,10 @@ class LoadoutBuilder
 {
     private const SessionKey = 'laravel_loadout.current_loadout_id';
 
-    public function __construct(private LoadoutAccess $access) {}
+    public function __construct(
+        private LoadoutAccess $access,
+        private PackageInstallClassifier $installClassifier,
+    ) {}
 
     public function useDraft(Session $session, Loadout $loadout): void
     {
@@ -69,6 +72,7 @@ class LoadoutBuilder
         ]);
 
         $isNewSelection = ! $selection->exists;
+        $installOptions = $selection->install_options ?: $this->installClassifier->optionsFor($package);
 
         $selection->fill([
             'display_name' => $package->name,
@@ -77,7 +81,7 @@ class LoadoutBuilder
             'source_url' => $package->source_url,
             'is_custom' => false,
             'package_snapshot' => $this->snapshotPackage($package),
-            'install_options' => [],
+            'install_options' => $installOptions,
             'position' => $selection->position ?: $this->nextPackagePosition($loadout),
         ])->save();
 
@@ -125,7 +129,7 @@ class LoadoutBuilder
                 'source_url' => $package['source_url'],
                 'install_command' => "composer require {$package['composer_name']}",
             ],
-            'install_options' => [],
+            'install_options' => $this->installClassifier->optionsForCustomPackage($package),
             'position' => $this->nextPackagePosition($loadout),
         ]);
     }
