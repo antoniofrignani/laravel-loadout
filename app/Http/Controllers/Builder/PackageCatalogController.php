@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Builder;
 
+use App\Enums\PackageStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Builder\PackageCatalogRequest;
 use App\Models\Loadout;
@@ -10,6 +11,7 @@ use App\Models\PackageCategory;
 use App\Services\LoadoutBuilder;
 use App\Services\PackageCatalog;
 use App\Services\PackageCompatibilityAdvisor;
+use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -53,13 +55,7 @@ class PackageCatalogController extends Controller
 
         return Inertia::render('builder/packages', [
             'packages' => $packages,
-            'categories' => PackageCategory::query()
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get(['name', 'slug'])
-                ->values()
-                ->all(),
+            'categories' => $this->categories(),
             'loadout' => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
@@ -105,6 +101,28 @@ class PackageCatalogController extends Controller
                     'is_selected' => $packageId !== null && in_array($packageId, $selectedPackageIds, true),
                 ];
             })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{name: string, slug: string, packages_count: int}>
+     */
+    private function categories(): array
+    {
+        return PackageCategory::query()
+            ->where('is_active', true)
+            ->withCount([
+                'packages as packages_count' => fn (Builder $query) => $query->where('status', PackageStatus::Curated),
+            ])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(fn (PackageCategory $category): array => [
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'packages_count' => (int) $category->packages_count,
+            ])
             ->values()
             ->all();
     }

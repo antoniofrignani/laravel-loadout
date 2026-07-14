@@ -38,6 +38,7 @@ class BuilderPackageCatalogPageTest extends TestCase
                 ->component('builder/packages')
                 ->has('categories', 1)
                 ->where('categories.0.slug', 'developer-experience')
+                ->where('categories.0.packages_count', 1)
                 ->where('loadout.title', 'Untitled Loadout')
                 ->where('loadout.selected_package_ids', [])
                 ->has('packages.data', 1)
@@ -81,6 +82,24 @@ class BuilderPackageCatalogPageTest extends TestCase
                 ->where('filters.category', 'media-and-uploads')
                 ->has('packages.data', 1)
                 ->where('packages.data.0.composer_name', 'spatie/laravel-medialibrary'),
+            );
+    }
+
+    public function test_builder_package_catalog_page_respects_per_page(): void
+    {
+        $this->withoutVite();
+
+        Package::factory()->count(5)->create();
+
+        $this->get(route('builder.packages', [
+            'per_page' => 2,
+        ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('builder/packages')
+                ->where('filters.per_page', 2)
+                ->has('packages.data', 2)
+                ->where('packages.total', 5),
             );
     }
 

@@ -45,6 +45,7 @@ import {
 type Category = {
     name: string;
     slug: string;
+    packages_count?: number;
 };
 
 type CatalogPackage = {
@@ -88,6 +89,7 @@ type Filters = {
     service?: string | null;
     laravel_version?: string | null;
     sort?: string | null;
+    per_page?: number | null;
 };
 
 type CustomLoadoutPackage = {
@@ -140,6 +142,8 @@ const sortOptions = [
     ['recently_added', 'Recently added'],
 ] as const;
 
+const perPageOptions = [24, 48, 72, 96] as const;
+
 function normalizePageLabel(label: string) {
     return label.replace('&laquo;', 'Previous').replace('&raquo;', 'Next');
 }
@@ -148,7 +152,14 @@ function selectedValue(value: string | null | undefined, fallback = 'all') {
     return value && value !== '' ? value : fallback;
 }
 
-function filterValue(filters: Filters | undefined, key: keyof Filters) {
+function selectedNumberValue(value: number | null | undefined, fallback = 24) {
+    return value ? String(value) : String(fallback);
+}
+
+function filterValue<Key extends keyof Filters>(
+    filters: Filters | undefined,
+    key: Key,
+): Filters[Key] | null {
     if (!filters || !Object.hasOwn(filters, key)) {
         return null;
     }
@@ -183,10 +194,17 @@ export default function BuilderPackages({
     const [category, setCategory] = useState(
         selectedValue(filterValue(filters, 'category')),
     );
-    const [type, setType] = useState(selectedValue(filterValue(filters, 'type')));
-    const [service, setService] = useState(filterValue(filters, 'service') ?? '');
+    const [type, setType] = useState(
+        selectedValue(filterValue(filters, 'type')),
+    );
+    const [service, setService] = useState(
+        filterValue(filters, 'service') ?? '',
+    );
     const [sort, setSort] = useState(
         selectedValue(filterValue(filters, 'sort'), 'relevance'),
+    );
+    const [perPage, setPerPage] = useState(
+        selectedNumberValue(filters?.per_page),
     );
     const [customPackageUrl, setCustomPackageUrl] = useState('');
 
@@ -201,6 +219,7 @@ export default function BuilderPackages({
                 type: type === 'all' ? undefined : type,
                 service: service || undefined,
                 sort: sort === 'relevance' ? undefined : sort,
+                per_page: perPage === '24' ? undefined : Number(perPage),
             },
             {
                 preserveState: true,
@@ -233,7 +252,7 @@ export default function BuilderPackages({
                             <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm">
                                 <PackagePlus className="size-4 text-muted-foreground" />
                                 <span>
-                                    {packages?.total ?? 0} packages indexed
+                                    {packages?.total ?? 0} matching packages
                                 </span>
                             </div>
                             <Button asChild variant="outline">
@@ -265,7 +284,7 @@ export default function BuilderPackages({
                         </CardHeader>
                         <CardContent>
                             <form
-                                className="grid gap-3 md:grid-cols-2 2xl:grid-cols-6"
+                                className="grid gap-3 md:grid-cols-2 2xl:grid-cols-7"
                                 onSubmit={applyFilters}
                             >
                                 <label className="flex flex-col gap-1.5 md:col-span-2 2xl:col-span-2">
@@ -300,14 +319,19 @@ export default function BuilderPackages({
                                             <SelectItem value="all">
                                                 All categories
                                             </SelectItem>
-                                            {packageCategories.map((category) => (
-                                                <SelectItem
-                                                    key={category.slug}
-                                                    value={category.slug}
-                                                >
-                                                    {category.name}
-                                                </SelectItem>
-                                            ))}
+                                            {packageCategories.map(
+                                                (category) => (
+                                                    <SelectItem
+                                                        key={category.slug}
+                                                        value={category.slug}
+                                                    >
+                                                        {category.name} (
+                                                        {category.packages_count ??
+                                                            0}
+                                                        )
+                                                    </SelectItem>
+                                                ),
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </label>
@@ -316,7 +340,10 @@ export default function BuilderPackages({
                                     <span className="text-xs font-medium text-muted-foreground">
                                         Type
                                     </span>
-                                    <Select value={type} onValueChange={setType}>
+                                    <Select
+                                        value={type}
+                                        onValueChange={setType}
+                                    >
                                         <SelectTrigger className="w-full">
                                             <SelectValue />
                                         </SelectTrigger>
@@ -338,7 +365,10 @@ export default function BuilderPackages({
                                     <span className="text-xs font-medium text-muted-foreground">
                                         Sort
                                     </span>
-                                    <Select value={sort} onValueChange={setSort}>
+                                    <Select
+                                        value={sort}
+                                        onValueChange={setSort}
+                                    >
                                         <SelectTrigger className="w-full">
                                             <SelectValue />
                                         </SelectTrigger>
@@ -353,6 +383,30 @@ export default function BuilderPackages({
                                                     </SelectItem>
                                                 ),
                                             )}
+                                        </SelectContent>
+                                    </Select>
+                                </label>
+
+                                <label className="flex flex-col gap-1.5">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                        Page size
+                                    </span>
+                                    <Select
+                                        value={perPage}
+                                        onValueChange={setPerPage}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {perPageOptions.map((value) => (
+                                                <SelectItem
+                                                    key={value}
+                                                    value={String(value)}
+                                                >
+                                                    {value} / page
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </label>
@@ -378,9 +432,15 @@ export default function BuilderPackages({
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() =>
-                                            router.get(builderPackages.url())
-                                        }
+                                        onClick={() => {
+                                            setSearch('');
+                                            setCategory('all');
+                                            setType('all');
+                                            setService('');
+                                            setSort('relevance');
+                                            setPerPage('24');
+                                            router.get(builderPackages.url());
+                                        }}
                                     >
                                         Reset
                                     </Button>
@@ -497,7 +557,8 @@ export default function BuilderPackages({
                                     ))
                                 ) : (
                                     <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                                        Select curated packages from the catalog.
+                                        Select curated packages from the
+                                        catalog.
                                     </div>
                                 )}
                             </div>
@@ -673,16 +734,13 @@ export default function BuilderPackages({
                                     {catalogPackage.is_official && (
                                         <Badge>Official</Badge>
                                     )}
-                                    {(catalogPackage.required_services ?? []).map(
-                                        (service) => (
-                                            <Badge
-                                                key={service}
-                                                variant="outline"
-                                            >
-                                                {service}
-                                            </Badge>
-                                        ),
-                                    )}
+                                    {(
+                                        catalogPackage.required_services ?? []
+                                    ).map((service) => (
+                                        <Badge key={service} variant="outline">
+                                            {service}
+                                        </Badge>
+                                    ))}
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                                     <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
@@ -703,14 +761,15 @@ export default function BuilderPackages({
                                         </span>
                                     </div>
                                 </div>
-                                {(catalogPackage.compatibility_warnings ?? []).length >
-                                    0 && (
+                                {(catalogPackage.compatibility_warnings ?? [])
+                                    .length > 0 && (
                                     <div className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                                        {(catalogPackage.compatibility_warnings ?? []).map(
-                                            (warning) => (
-                                                <p key={warning}>{warning}</p>
-                                            ),
-                                        )}
+                                        {(
+                                            catalogPackage.compatibility_warnings ??
+                                            []
+                                        ).map((warning) => (
+                                            <p key={warning}>{warning}</p>
+                                        ))}
                                     </div>
                                 )}
                                 <Form
@@ -780,7 +839,9 @@ export default function BuilderPackages({
                                         {normalizePageLabel(link.label)}
                                     </Link>
                                 ) : (
-                                    <span>{normalizePageLabel(link.label)}</span>
+                                    <span>
+                                        {normalizePageLabel(link.label)}
+                                    </span>
                                 )}
                             </Button>
                         ))}

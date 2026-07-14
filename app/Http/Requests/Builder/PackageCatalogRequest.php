@@ -49,7 +49,7 @@ class PackageCatalogRequest extends FormRequest
      */
     public function filters(): array
     {
-        return $this->safe()->only([
+        $filters = $this->safe()->only([
             'search',
             'category',
             'type',
@@ -59,5 +59,11 @@ class PackageCatalogRequest extends FormRequest
             'sort',
             'per_page',
         ]);
+
+        if (array_key_exists('per_page', $filters) && $filters['per_page'] !== null) {
+            $filters['per_page'] = (int) $filters['per_page'];
+        }
+
+        return $filters;
     }
 }
