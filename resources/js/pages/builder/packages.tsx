@@ -190,6 +190,23 @@ export default function BuilderPackages({
     const selectedPackages = loadout?.selected_packages ?? [];
     const customPackages = loadout?.custom_packages ?? [];
     const packageRecommendations = recommendations ?? [];
+    const selectedCount = selectedPackages.length + customPackages.length;
+    const devPackageCount = selectedPackages.filter(
+        (pkg) => pkg.install_options?.dev_dependency,
+    ).length;
+    const productionPackageCount = selectedPackages.length - devPackageCount;
+    const visibleSelectedPackages = selectedPackages.slice(0, 24);
+    const hiddenSelectedPackageCount =
+        selectedPackages.length - visibleSelectedPackages.length;
+    const categoryHighlights = packageCategories
+        .filter((category) => (category.packages_count ?? 0) > 0)
+        .slice(0, 8);
+    const productionWidth =
+        selectedCount > 0 ? (productionPackageCount / selectedCount) * 100 : 0;
+    const devWidth =
+        selectedCount > 0 ? (devPackageCount / selectedCount) * 100 : 0;
+    const customWidth =
+        selectedCount > 0 ? (customPackages.length / selectedCount) * 100 : 0;
     const [search, setSearch] = useState(filterValue(filters, 'search') ?? '');
     const [category, setCategory] = useState(
         selectedValue(filterValue(filters, 'category')),
@@ -231,7 +248,7 @@ export default function BuilderPackages({
     return (
         <>
             <Head title="Packages" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto p-4 md:p-6">
                 <header className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>Step 5</span>
@@ -271,131 +288,96 @@ export default function BuilderPackages({
                     </div>
                 </header>
 
-                <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-                    <Card className="rounded-lg">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base">
-                                Find packages
-                            </CardTitle>
-                            <CardDescription>
-                                Search, filter, and sort by hourly stats
-                                snapshots.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form
-                                className="grid gap-3 md:grid-cols-2 2xl:grid-cols-7"
-                                onSubmit={applyFilters}
-                            >
-                                <label className="flex flex-col gap-1.5 md:col-span-2 2xl:col-span-2">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        Search
-                                    </span>
-                                    <div className="relative">
-                                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            className="pl-9"
-                                            value={search}
-                                            onChange={(event) =>
-                                                setSearch(event.target.value)
-                                            }
-                                            placeholder="Package name or vendor/package"
-                                        />
-                                    </div>
+                <section className="grid items-start gap-4 2xl:grid-cols-[minmax(0,1fr)_430px]">
+                    <div className="min-w-0 space-y-4">
+                        <form
+                            className="sticky top-0 z-20 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80"
+                            onSubmit={applyFilters}
+                        >
+                            <div className="grid gap-2 lg:grid-cols-[minmax(260px,1.5fr)_repeat(4,minmax(140px,1fr))_auto]">
+                                <label className="relative">
+                                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        className="h-9 pl-9"
+                                        value={search}
+                                        onChange={(event) =>
+                                            setSearch(event.target.value)
+                                        }
+                                        placeholder="Search package or vendor/name"
+                                    />
                                 </label>
 
-                                <label className="flex flex-col gap-1.5">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        Category
-                                    </span>
-                                    <Select
-                                        value={category}
-                                        onValueChange={setCategory}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">
-                                                All categories
+                                <Select
+                                    value={category}
+                                    onValueChange={setCategory}
+                                >
+                                    <SelectTrigger className="h-9 w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All categories
+                                        </SelectItem>
+                                        {packageCategories.map((category) => (
+                                            <SelectItem
+                                                key={category.slug}
+                                                value={category.slug}
+                                            >
+                                                {category.name} (
+                                                {category.packages_count ?? 0})
                                             </SelectItem>
-                                            {packageCategories.map(
-                                                (category) => (
-                                                    <SelectItem
-                                                        key={category.slug}
-                                                        value={category.slug}
-                                                    >
-                                                        {category.name} (
-                                                        {category.packages_count ??
-                                                            0}
-                                                        )
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                </label>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
 
-                                <label className="flex flex-col gap-1.5">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        Type
-                                    </span>
-                                    <Select
-                                        value={type}
-                                        onValueChange={setType}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">
-                                                All packages
-                                            </SelectItem>
-                                            <SelectItem value="official">
-                                                Official
-                                            </SelectItem>
-                                            <SelectItem value="community">
-                                                Community
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </label>
+                                <Select value={type} onValueChange={setType}>
+                                    <SelectTrigger className="h-9 w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All packages
+                                        </SelectItem>
+                                        <SelectItem value="official">
+                                            Official
+                                        </SelectItem>
+                                        <SelectItem value="community">
+                                            Community
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
 
-                                <label className="flex flex-col gap-1.5">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        Sort
-                                    </span>
-                                    <Select
-                                        value={sort}
-                                        onValueChange={setSort}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {sortOptions.map(
-                                                ([value, label]) => (
-                                                    <SelectItem
-                                                        key={value}
-                                                        value={value}
-                                                    >
-                                                        {label}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                </label>
+                                <Select value={sort} onValueChange={setSort}>
+                                    <SelectTrigger className="h-9 w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {sortOptions.map(([value, label]) => (
+                                            <SelectItem
+                                                key={value}
+                                                value={value}
+                                            >
+                                                {label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
 
-                                <label className="flex flex-col gap-1.5">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        Page size
-                                    </span>
+                                <Input
+                                    className="h-9"
+                                    value={service}
+                                    onChange={(event) =>
+                                        setService(event.target.value)
+                                    }
+                                    placeholder="Service"
+                                />
+
+                                <div className="flex gap-2">
                                     <Select
                                         value={perPage}
                                         onValueChange={setPerPage}
                                     >
-                                        <SelectTrigger className="w-full">
+                                        <SelectTrigger className="h-9 w-24">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -404,200 +386,349 @@ export default function BuilderPackages({
                                                     key={value}
                                                     value={String(value)}
                                                 >
-                                                    {value} / page
+                                                    {value}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                </label>
-
-                                <label className="flex flex-col gap-1.5 md:col-span-2 2xl:col-span-1">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        Required service
-                                    </span>
-                                    <Input
-                                        value={service}
-                                        onChange={(event) =>
-                                            setService(event.target.value)
-                                        }
-                                        placeholder="redis, meilisearch, mailpit"
-                                    />
-                                </label>
-
-                                <div className="flex items-end gap-2 md:col-span-2 2xl:col-span-1">
-                                    <Button type="submit">
-                                        <Search className="size-4" />
+                                    <Button className="h-9" type="submit">
                                         Apply
                                     </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setSearch('');
-                                            setCategory('all');
-                                            setType('all');
-                                            setService('');
-                                            setSort('relevance');
-                                            setPerPage('24');
-                                            router.get(builderPackages.url());
-                                        }}
-                                    >
-                                        Reset
-                                    </Button>
                                 </div>
-                            </form>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="rounded-lg">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center justify-between gap-3 text-base">
-                                Selected loadout
-                                <Badge variant="secondary">
-                                    {selectedPackages.length +
-                                        customPackages.length}
-                                </Badge>
-                            </CardTitle>
-                            <CardDescription>
-                                Compact controls for long dependency lists.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
-                                {selectedPackages.length > 0 ? (
-                                    selectedPackages.map((selectedPackage) => (
-                                        <div
-                                            key={selectedPackage.id}
-                                            className="rounded-md border bg-background p-3"
-                                        >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <div className="truncate text-sm font-medium">
-                                                        {
-                                                            selectedPackage.display_name
-                                                        }
-                                                    </div>
-                                                    <div className="truncate font-mono text-xs text-muted-foreground">
-                                                        {
-                                                            selectedPackage.composer_name
-                                                        }
-                                                    </div>
-                                                </div>
-                                                <PackageCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                                            </div>
-                                            <Form
-                                                className="mt-3 grid gap-2"
-                                                options={{
-                                                    preserveScroll: true,
-                                                }}
-                                                {...updateLoadoutPackage.form(
-                                                    selectedPackage.id,
-                                                )}
-                                            >
-                                                {({ errors, processing }) => (
-                                                    <>
-                                                        <Select
-                                                            defaultValue={
-                                                                selectedPackage
-                                                                    .install_options
-                                                                    ?.dev_dependency
-                                                                    ? '1'
-                                                                    : '0'
-                                                            }
-                                                            name="install_as_dev"
-                                                        >
-                                                            <SelectTrigger className="h-8 w-full text-xs">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="0">
-                                                                    Production
-                                                                </SelectItem>
-                                                                <SelectItem value="1">
-                                                                    Dev
-                                                                    dependency
-                                                                </SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {errors.install_as_dev && (
-                                                            <p className="text-xs text-destructive">
-                                                                {
-                                                                    errors.install_as_dev
-                                                                }
-                                                            </p>
-                                                        )}
-                                                        <Textarea
-                                                            className="min-h-16 text-xs"
-                                                            name="notes"
-                                                            defaultValue={
-                                                                selectedPackage.notes ??
-                                                                ''
-                                                            }
-                                                            placeholder="Package setup notes"
-                                                        />
-                                                        {errors.notes && (
-                                                            <p className="text-xs text-destructive">
-                                                                {errors.notes}
-                                                            </p>
-                                                        )}
-                                                        <Button
-                                                            className="h-8"
-                                                            disabled={
-                                                                processing
-                                                            }
-                                                            size="sm"
-                                                            variant="outline"
-                                                        >
-                                                            Save notes
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </Form>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                                        Select curated packages from the
-                                        catalog.
-                                    </div>
-                                )}
                             </div>
 
-                            {customPackages.length > 0 && (
-                                <div className="space-y-2 border-t pt-4">
-                                    <div className="text-xs font-medium text-muted-foreground">
-                                        Custom packages
-                                    </div>
-                                    <div className="max-h-32 space-y-2 overflow-y-auto pr-1">
-                                        {customPackages.map((pkg) => (
-                                            <div
-                                                key={pkg.id}
-                                                className="rounded-md bg-muted px-3 py-2 text-sm"
-                                            >
-                                                <div className="truncate font-medium">
-                                                    {pkg.display_name}
-                                                </div>
-                                                <div className="truncate font-mono text-xs text-muted-foreground">
-                                                    {pkg.composer_name}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                            <div className="mt-3 flex flex-col justify-between gap-3 text-xs text-muted-foreground md:flex-row md:items-center">
+                                <div className="flex flex-wrap gap-1.5">
+                                    {categoryHighlights.map((category) => (
+                                        <button
+                                            key={category.slug}
+                                            className="rounded-full border px-2.5 py-1 transition-colors hover:bg-muted"
+                                            onClick={() => {
+                                                setCategory(category.slug);
+                                                router.get(
+                                                    builderPackages.url(),
+                                                    {
+                                                        search:
+                                                            search || undefined,
+                                                        category: category.slug,
+                                                        type:
+                                                            type === 'all'
+                                                                ? undefined
+                                                                : type,
+                                                        service:
+                                                            service ||
+                                                            undefined,
+                                                        sort:
+                                                            sort === 'relevance'
+                                                                ? undefined
+                                                                : sort,
+                                                        per_page:
+                                                            perPage === '24'
+                                                                ? undefined
+                                                                : Number(
+                                                                      perPage,
+                                                                  ),
+                                                    },
+                                                    {
+                                                        preserveState: true,
+                                                        replace: true,
+                                                    },
+                                                );
+                                            }}
+                                            type="button"
+                                        >
+                                            {category.name}{' '}
+                                            <span className="text-foreground">
+                                                {category.packages_count}
+                                            </span>
+                                        </button>
+                                    ))}
                                 </div>
-                            )}
+                                <button
+                                    className="self-start text-xs font-medium text-foreground underline-offset-4 hover:underline md:self-auto"
+                                    onClick={() => {
+                                        setSearch('');
+                                        setCategory('all');
+                                        setType('all');
+                                        setService('');
+                                        setSort('relevance');
+                                        setPerPage('24');
+                                        router.get(builderPackages.url());
+                                    }}
+                                    type="button"
+                                >
+                                    Clear filters
+                                </button>
+                            </div>
+                        </form>
 
-                            <div className="border-t pt-4">
-                                <div className="mb-2 text-xs font-medium text-muted-foreground">
-                                    Add custom package
+                        <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            {catalogPackages.map((catalogPackage) => (
+                                <Card
+                                    key={catalogPackage.id}
+                                    className="flex flex-col rounded-lg py-4"
+                                >
+                                    <CardHeader className="gap-2 px-4 pb-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <CardTitle className="line-clamp-1 text-base leading-tight">
+                                                    {catalogPackage.name}
+                                                </CardTitle>
+                                                <CardDescription className="mt-1 truncate font-mono text-xs">
+                                                    {catalogPackage.composer_name ??
+                                                        catalogPackage.npm_name}
+                                                </CardDescription>
+                                            </div>
+                                            {catalogPackage.is_featured && (
+                                                <Badge variant="secondary">
+                                                    Featured
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <p className="line-clamp-2 text-sm text-muted-foreground">
+                                            {catalogPackage.description}
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent className="mt-auto flex flex-col gap-3 px-4">
+                                        <div className="flex flex-wrap gap-2">
+                                            {catalogPackage.category && (
+                                                <Badge variant="outline">
+                                                    {
+                                                        catalogPackage.category
+                                                            .name
+                                                    }
+                                                </Badge>
+                                            )}
+                                            {catalogPackage.is_official && (
+                                                <Badge>Official</Badge>
+                                            )}
+                                            {(
+                                                catalogPackage.required_services ??
+                                                []
+                                            ).map((service) => (
+                                                <Badge
+                                                    key={service}
+                                                    variant="outline"
+                                                >
+                                                    {service}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                                            <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                                                <Star className="size-3.5" />
+                                                {compactNumber(
+                                                    catalogPackage.stars,
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                                                <Download className="size-3.5" />
+                                                {compactNumber(
+                                                    catalogPackage.downloads,
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                                                <RefreshCw className="size-3.5" />
+                                                <span className="truncate">
+                                                    {catalogPackage.stats_refreshed_at ??
+                                                        'Pending'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {(
+                                            catalogPackage.compatibility_warnings ??
+                                            []
+                                        ).length > 0 && (
+                                            <div className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                                                {(
+                                                    catalogPackage.compatibility_warnings ??
+                                                    []
+                                                ).map((warning) => (
+                                                    <p key={warning}>
+                                                        {warning}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <Form
+                                            options={{ preserveScroll: true }}
+                                            {...storeLoadoutPackage.form()}
+                                        >
+                                            {({ processing }) => {
+                                                const selected =
+                                                    selectedPackageIds.includes(
+                                                        catalogPackage.id,
+                                                    );
+
+                                                return (
+                                                    <>
+                                                        <input
+                                                            name="package_id"
+                                                            type="hidden"
+                                                            value={
+                                                                catalogPackage.id
+                                                            }
+                                                        />
+                                                        <Button
+                                                            className="w-full"
+                                                            disabled={
+                                                                processing ||
+                                                                selected
+                                                            }
+                                                            variant={
+                                                                selected
+                                                                    ? 'secondary'
+                                                                    : 'outline'
+                                                            }
+                                                        >
+                                                            <Plus className="size-4" />
+                                                            {selected
+                                                                ? 'Selected'
+                                                                : 'Select package'}
+                                                        </Button>
+                                                    </>
+                                                );
+                                            }}
+                                        </Form>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </section>
+
+                        {catalogPackages.length === 0 && (
+                            <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
+                                No packages match the current filters.
+                            </div>
+                        )}
+
+                        <footer className="flex flex-col justify-between gap-3 border-t pt-4 text-sm text-muted-foreground md:flex-row md:items-center">
+                            <span>
+                                Showing {packages?.from ?? 0}-
+                                {packages?.to ?? 0} of {packages?.total ?? 0}
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                                {paginationLinks.map((link) => (
+                                    <Button
+                                        key={`${link.label}-${link.url}`}
+                                        asChild={Boolean(link.url)}
+                                        disabled={!link.url}
+                                        size="sm"
+                                        variant={
+                                            link.active ? 'default' : 'outline'
+                                        }
+                                    >
+                                        {link.url ? (
+                                            <Link
+                                                href={link.url}
+                                                preserveScroll
+                                            >
+                                                {normalizePageLabel(link.label)}
+                                            </Link>
+                                        ) : (
+                                            <span>
+                                                {normalizePageLabel(link.label)}
+                                            </span>
+                                        )}
+                                    </Button>
+                                ))}
+                            </div>
+                        </footer>
+                    </div>
+
+                    <aside className="space-y-4 2xl:sticky 2xl:top-4">
+                        <Card className="overflow-hidden rounded-xl">
+                            <CardHeader className="border-b bg-muted/40 pb-4">
+                                <CardTitle className="flex items-center justify-between gap-3 text-base">
+                                    Loadout map
+                                    <Badge variant="secondary">
+                                        {selectedCount} selected
+                                    </Badge>
+                                </CardTitle>
+                                <CardDescription>
+                                    A live overview of the dependency stack you
+                                    are composing.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4 p-4">
+                                <div className="grid grid-cols-4 gap-2">
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {selectedCount}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Total
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {productionPackageCount}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Prod
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {devPackageCount}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Dev
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {customPackages.length}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Custom
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                        <span>Stack composition</span>
+                                        <span>
+                                            {productionPackageCount} prod /{' '}
+                                            {devPackageCount} dev /{' '}
+                                            {customPackages.length} custom
+                                        </span>
+                                    </div>
+                                    <div className="flex h-2 overflow-hidden rounded-full bg-muted">
+                                        <div
+                                            className="bg-emerald-500"
+                                            style={{
+                                                width: `${productionWidth}%`,
+                                            }}
+                                        />
+                                        <div
+                                            className="bg-sky-500"
+                                            style={{ width: `${devWidth}%` }}
+                                        />
+                                        <div
+                                            className="bg-amber-500"
+                                            style={{ width: `${customWidth}%` }}
+                                        />
+                                    </div>
+                                </div>
+
                                 <Form
-                                    className="flex flex-col gap-3"
+                                    className="grid gap-2 rounded-lg border bg-background p-3"
                                     onSuccess={() => setCustomPackageUrl('')}
                                     options={{ preserveScroll: true }}
                                     {...storeCustomPackage.form()}
                                 >
                                     {({ errors, processing }) => (
                                         <>
+                                            <div>
+                                                <div className="text-sm font-medium">
+                                                    Drop in a custom package
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Used only in this loadout
+                                                    until curated globally.
+                                                </p>
+                                            </div>
                                             <Input
                                                 name="package_url"
                                                 value={customPackageUrl}
@@ -614,239 +745,296 @@ export default function BuilderPackages({
                                                 </p>
                                             )}
                                             <Button
+                                                className="w-full"
                                                 disabled={
                                                     processing ||
                                                     !customPackageUrl
                                                 }
+                                                size="sm"
                                             >
                                                 <Plus className="size-4" />
-                                                Add to loadout
+                                                Add custom package
                                             </Button>
                                         </>
                                     )}
                                 </Form>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </section>
 
-                {packageRecommendations.length > 0 && (
-                    <section className="grid gap-3 md:grid-cols-3">
-                        {packageRecommendations.map((recommendation) => (
-                            <Card
-                                key={recommendation.composer_name}
-                                className="rounded-lg border-dashed"
-                            >
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-base">
-                                        {recommendation.title}
-                                    </CardTitle>
-                                    <CardDescription className="font-mono text-xs">
-                                        {recommendation.composer_name}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
-                                    <p>{recommendation.reason}</p>
-                                    <Form
-                                        options={{ preserveScroll: true }}
-                                        {...storeLoadoutPackage.form()}
-                                    >
-                                        {({ processing }) => (
-                                            <>
-                                                {recommendation.package_id ? (
-                                                    <input
-                                                        name="package_id"
-                                                        type="hidden"
-                                                        value={
-                                                            recommendation.package_id
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        name="composer_name"
-                                                        type="hidden"
-                                                        value={
+                                {packageRecommendations.length > 0 && (
+                                    <div className="space-y-2">
+                                        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                            Suggested by runtime
+                                        </div>
+                                        <div className="space-y-2">
+                                            {packageRecommendations.map(
+                                                (recommendation) => (
+                                                    <div
+                                                        key={
                                                             recommendation.composer_name
                                                         }
-                                                    />
-                                                )}
-                                                <Button
-                                                    className="w-full"
-                                                    disabled={
-                                                        processing ||
-                                                        recommendation.is_selected
-                                                    }
-                                                    size="sm"
-                                                    variant={
-                                                        recommendation.is_selected
-                                                            ? 'secondary'
-                                                            : 'outline'
-                                                    }
-                                                >
-                                                    <Plus className="size-4" />
-                                                    {recommendation.is_selected
-                                                        ? 'Selected'
-                                                        : 'Select package'}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Form>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </section>
-                )}
-
-                <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                    {catalogPackages.map((catalogPackage) => (
-                        <Card
-                            key={catalogPackage.id}
-                            className="flex flex-col rounded-lg py-4"
-                        >
-                            <CardHeader className="gap-2 px-4 pb-3">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <CardTitle className="line-clamp-1 text-base leading-tight">
-                                            {catalogPackage.name}
-                                        </CardTitle>
-                                        <CardDescription className="mt-1 truncate font-mono text-xs">
-                                            {catalogPackage.composer_name ??
-                                                catalogPackage.npm_name}
-                                        </CardDescription>
-                                    </div>
-                                    {catalogPackage.is_featured && (
-                                        <Badge variant="secondary">
-                                            Featured
-                                        </Badge>
-                                    )}
-                                </div>
-                                <p className="line-clamp-2 text-sm text-muted-foreground">
-                                    {catalogPackage.description}
-                                </p>
-                            </CardHeader>
-                            <CardContent className="mt-auto flex flex-col gap-3 px-4">
-                                <div className="flex flex-wrap gap-2">
-                                    {catalogPackage.category && (
-                                        <Badge variant="outline">
-                                            {catalogPackage.category.name}
-                                        </Badge>
-                                    )}
-                                    {catalogPackage.is_official && (
-                                        <Badge>Official</Badge>
-                                    )}
-                                    {(
-                                        catalogPackage.required_services ?? []
-                                    ).map((service) => (
-                                        <Badge key={service} variant="outline">
-                                            {service}
-                                        </Badge>
-                                    ))}
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                                    <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
-                                        <Star className="size-3.5" />
-                                        {compactNumber(catalogPackage.stars)}
-                                    </div>
-                                    <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
-                                        <Download className="size-3.5" />
-                                        {compactNumber(
-                                            catalogPackage.downloads,
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
-                                        <RefreshCw className="size-3.5" />
-                                        <span className="truncate">
-                                            {catalogPackage.stats_refreshed_at ??
-                                                'Pending'}
-                                        </span>
-                                    </div>
-                                </div>
-                                {(catalogPackage.compatibility_warnings ?? [])
-                                    .length > 0 && (
-                                    <div className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                                        {(
-                                            catalogPackage.compatibility_warnings ??
-                                            []
-                                        ).map((warning) => (
-                                            <p key={warning}>{warning}</p>
-                                        ))}
+                                                        className="rounded-lg border border-dashed p-3"
+                                                    >
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="min-w-0">
+                                                                <div className="truncate text-sm font-medium">
+                                                                    {
+                                                                        recommendation.title
+                                                                    }
+                                                                </div>
+                                                                <div className="truncate font-mono text-xs text-muted-foreground">
+                                                                    {
+                                                                        recommendation.composer_name
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <Form
+                                                                options={{
+                                                                    preserveScroll: true,
+                                                                }}
+                                                                {...storeLoadoutPackage.form()}
+                                                            >
+                                                                {({
+                                                                    processing,
+                                                                }) => (
+                                                                    <>
+                                                                        {recommendation.package_id ? (
+                                                                            <input
+                                                                                name="package_id"
+                                                                                type="hidden"
+                                                                                value={
+                                                                                    recommendation.package_id
+                                                                                }
+                                                                            />
+                                                                        ) : (
+                                                                            <input
+                                                                                name="composer_name"
+                                                                                type="hidden"
+                                                                                value={
+                                                                                    recommendation.composer_name
+                                                                                }
+                                                                            />
+                                                                        )}
+                                                                        <Button
+                                                                            className="h-7 px-2"
+                                                                            disabled={
+                                                                                processing ||
+                                                                                recommendation.is_selected
+                                                                            }
+                                                                            size="sm"
+                                                                            variant={
+                                                                                recommendation.is_selected
+                                                                                    ? 'secondary'
+                                                                                    : 'outline'
+                                                                            }
+                                                                        >
+                                                                            {recommendation.is_selected
+                                                                                ? 'In'
+                                                                                : 'Add'}
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                            </Form>
+                                                        </div>
+                                                        <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                                                            {
+                                                                recommendation.reason
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
                                     </div>
                                 )}
-                                <Form
-                                    options={{ preserveScroll: true }}
-                                    {...storeLoadoutPackage.form()}
-                                >
-                                    {({ processing }) => {
-                                        const selected =
-                                            selectedPackageIds.includes(
-                                                catalogPackage.id,
-                                            );
-
-                                        return (
-                                            <>
-                                                <input
-                                                    name="package_id"
-                                                    type="hidden"
-                                                    value={catalogPackage.id}
-                                                />
-                                                <Button
-                                                    className="w-full"
-                                                    disabled={
-                                                        processing || selected
-                                                    }
-                                                    variant={
-                                                        selected
-                                                            ? 'secondary'
-                                                            : 'outline'
-                                                    }
-                                                >
-                                                    <Plus className="size-4" />
-                                                    {selected
-                                                        ? 'Selected'
-                                                        : 'Select package'}
-                                                </Button>
-                                            </>
-                                        );
-                                    }}
-                                </Form>
                             </CardContent>
                         </Card>
-                    ))}
-                </section>
 
-                {catalogPackages.length === 0 && (
-                    <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-                        No packages match the current filters.
-                    </div>
-                )}
+                        <Card className="rounded-xl">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="flex items-center justify-between gap-3 text-base">
+                                    Dependency stack
+                                    <PackageCheck className="size-4 text-muted-foreground" />
+                                </CardTitle>
+                                <CardDescription>
+                                    Collapsed by default so long loadouts stay
+                                    scannable.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div className="max-h-[46vh] space-y-2 overflow-y-auto pr-1">
+                                    {visibleSelectedPackages.length > 0 ? (
+                                        visibleSelectedPackages.map(
+                                            (selectedPackage) => (
+                                                <details
+                                                    key={selectedPackage.id}
+                                                    className="group rounded-lg border bg-background p-3 open:bg-muted/30"
+                                                >
+                                                    <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
+                                                        <div className="min-w-0">
+                                                            <div className="truncate text-sm font-medium">
+                                                                {
+                                                                    selectedPackage.display_name
+                                                                }
+                                                            </div>
+                                                            <div className="truncate font-mono text-xs text-muted-foreground">
+                                                                {
+                                                                    selectedPackage.composer_name
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <Badge
+                                                            variant={
+                                                                selectedPackage
+                                                                    .install_options
+                                                                    ?.dev_dependency
+                                                                    ? 'outline'
+                                                                    : 'secondary'
+                                                            }
+                                                        >
+                                                            {selectedPackage
+                                                                .install_options
+                                                                ?.dev_dependency
+                                                                ? 'Dev'
+                                                                : 'Prod'}
+                                                        </Badge>
+                                                    </summary>
+                                                    <Form
+                                                        className="mt-3 grid gap-2"
+                                                        options={{
+                                                            preserveScroll: true,
+                                                        }}
+                                                        {...updateLoadoutPackage.form(
+                                                            selectedPackage.id,
+                                                        )}
+                                                    >
+                                                        {({
+                                                            errors,
+                                                            processing,
+                                                        }) => (
+                                                            <>
+                                                                <Select
+                                                                    defaultValue={
+                                                                        selectedPackage
+                                                                            .install_options
+                                                                            ?.dev_dependency
+                                                                            ? '1'
+                                                                            : '0'
+                                                                    }
+                                                                    name="install_as_dev"
+                                                                >
+                                                                    <SelectTrigger className="h-8 w-full text-xs">
+                                                                        <SelectValue />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="0">
+                                                                            Production
+                                                                        </SelectItem>
+                                                                        <SelectItem value="1">
+                                                                            Dev
+                                                                            dependency
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                {errors.install_as_dev && (
+                                                                    <p className="text-xs text-destructive">
+                                                                        {
+                                                                            errors.install_as_dev
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                                <Textarea
+                                                                    className="min-h-16 text-xs"
+                                                                    name="notes"
+                                                                    defaultValue={
+                                                                        selectedPackage.notes ??
+                                                                        ''
+                                                                    }
+                                                                    placeholder="Package setup notes"
+                                                                />
+                                                                {errors.notes && (
+                                                                    <p className="text-xs text-destructive">
+                                                                        {
+                                                                            errors.notes
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                                <Button
+                                                                    className="h-8"
+                                                                    disabled={
+                                                                        processing
+                                                                    }
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                >
+                                                                    Save notes
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </Form>
+                                                </details>
+                                            ),
+                                        )
+                                    ) : (
+                                        <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                                            Select curated packages from the
+                                            catalog.
+                                        </div>
+                                    )}
+                                </div>
 
-                <footer className="flex flex-col justify-between gap-3 border-t pt-4 text-sm text-muted-foreground md:flex-row md:items-center">
-                    <span>
-                        Showing {packages?.from ?? 0}-{packages?.to ?? 0} of{' '}
-                        {packages?.total ?? 0}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                        {paginationLinks.map((link) => (
-                            <Button
-                                key={`${link.label}-${link.url}`}
-                                asChild={Boolean(link.url)}
-                                disabled={!link.url}
-                                size="sm"
-                                variant={link.active ? 'default' : 'outline'}
-                            >
-                                {link.url ? (
-                                    <Link href={link.url} preserveScroll>
-                                        {normalizePageLabel(link.label)}
-                                    </Link>
-                                ) : (
-                                    <span>
-                                        {normalizePageLabel(link.label)}
-                                    </span>
+                                {hiddenSelectedPackageCount > 0 && (
+                                    <div className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                                        {hiddenSelectedPackageCount} more
+                                        selected packages are summarized in the
+                                        map. Use review for the full generated
+                                        artifact.
+                                    </div>
                                 )}
-                            </Button>
-                        ))}
-                    </div>
-                </footer>
+
+                                {customPackages.length > 0 && (
+                                    <div className="space-y-2 border-t pt-3">
+                                        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                            Custom packages
+                                        </div>
+                                        <div className="max-h-36 space-y-2 overflow-y-auto pr-1">
+                                            {customPackages.map((pkg) => (
+                                                <div
+                                                    key={pkg.id}
+                                                    className="rounded-md bg-muted px-3 py-2 text-sm"
+                                                >
+                                                    <div className="truncate font-medium">
+                                                        {pkg.display_name}
+                                                    </div>
+                                                    <div className="truncate font-mono text-xs text-muted-foreground">
+                                                        {pkg.composer_name}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-2 pt-1">
+                                    <Button
+                                        asChild
+                                        className="flex-1"
+                                        variant="outline"
+                                    >
+                                        <Link href={builderRuntime.url()}>
+                                            <ArrowLeft className="size-4" />
+                                            Runtime
+                                        </Link>
+                                    </Button>
+                                    <Button asChild className="flex-1">
+                                        <Link href={builderReview.url()}>
+                                            Review
+                                            <ArrowRight className="size-4" />
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </aside>
+                </section>
             </div>
         </>
     );
