@@ -51,7 +51,7 @@ class RefreshPackageStats implements ShouldBeUnique, ShouldQueue
         return 'package-stats-refresh';
     }
 
-    private function refreshPackage(Package $package): void
+    public function refreshPackage(Package $package): void
     {
         $refreshedAt = now();
         $updates = [];
