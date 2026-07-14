@@ -145,7 +145,20 @@ const sortOptions = [
 const perPageOptions = [24, 48, 72, 96] as const;
 
 function normalizePageLabel(label: string) {
-    return label.replace('&laquo;', 'Previous').replace('&raquo;', 'Next');
+    const text = label
+        .replaceAll('&laquo;', '')
+        .replaceAll('&raquo;', '')
+        .trim();
+
+    if (text.toLowerCase().includes('previous')) {
+        return 'Previous';
+    }
+
+    if (text.toLowerCase().includes('next')) {
+        return 'Next';
+    }
+
+    return text;
 }
 
 function selectedValue(value: string | null | undefined, fallback = 'all') {
@@ -462,6 +475,210 @@ export default function BuilderPackages({
                             </div>
                         </form>
 
+                        <Card className="overflow-hidden rounded-xl">
+                            <CardHeader className="border-b bg-muted/40 px-4 py-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <CardTitle className="text-base leading-none">
+                                        Loadout map
+                                    </CardTitle>
+                                    <Badge variant="secondary">
+                                        {selectedCount} selected
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4 p-4">
+                                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {selectedCount}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Total
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {productionPackageCount}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Prod
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {devPackageCount}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Dev
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-background p-2">
+                                        <div className="text-lg font-semibold">
+                                            {customPackages.length}
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                            Custom
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                        <span>Stack composition</span>
+                                        <span>
+                                            {productionPackageCount} prod /{' '}
+                                            {devPackageCount} dev /{' '}
+                                            {customPackages.length} custom
+                                        </span>
+                                    </div>
+                                    <div className="flex h-2 overflow-hidden rounded-full bg-muted">
+                                        <div
+                                            className="bg-emerald-500"
+                                            style={{
+                                                width: `${productionWidth}%`,
+                                            }}
+                                        />
+                                        <div
+                                            className="bg-sky-500"
+                                            style={{ width: `${devWidth}%` }}
+                                        />
+                                        <div
+                                            className="bg-amber-500"
+                                            style={{ width: `${customWidth}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <Form
+                                    className="grid gap-2 rounded-lg border bg-background p-3"
+                                    onSuccess={() => setCustomPackageUrl('')}
+                                    options={{ preserveScroll: true }}
+                                    {...storeCustomPackage.form()}
+                                >
+                                    {({ errors, processing }) => (
+                                        <>
+                                            <div className="text-sm font-medium">
+                                                Drop in a custom package
+                                            </div>
+                                            <Input
+                                                name="package_url"
+                                                value={customPackageUrl}
+                                                onChange={(event) =>
+                                                    setCustomPackageUrl(
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="https://packagist.org/packages/vendor/name"
+                                            />
+                                            {errors.package_url && (
+                                                <p className="text-xs text-destructive">
+                                                    {errors.package_url}
+                                                </p>
+                                            )}
+                                            <Button
+                                                className="w-full"
+                                                disabled={
+                                                    processing ||
+                                                    !customPackageUrl
+                                                }
+                                                size="sm"
+                                            >
+                                                <Plus className="size-4" />
+                                                Add custom package
+                                            </Button>
+                                        </>
+                                    )}
+                                </Form>
+
+                                {packageRecommendations.length > 0 && (
+                                    <div className="space-y-2">
+                                        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                            Suggested by runtime
+                                        </div>
+                                        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                                            {packageRecommendations.map(
+                                                (recommendation) => (
+                                                    <div
+                                                        key={
+                                                            recommendation.composer_name
+                                                        }
+                                                        className="rounded-lg border border-dashed p-3"
+                                                    >
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="min-w-0">
+                                                                <div className="truncate text-sm font-medium">
+                                                                    {
+                                                                        recommendation.title
+                                                                    }
+                                                                </div>
+                                                                <div className="truncate font-mono text-xs text-muted-foreground">
+                                                                    {
+                                                                        recommendation.composer_name
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <Form
+                                                                options={{
+                                                                    preserveScroll: true,
+                                                                }}
+                                                                {...storeLoadoutPackage.form()}
+                                                            >
+                                                                {({
+                                                                    processing,
+                                                                }) => (
+                                                                    <>
+                                                                        {recommendation.package_id ? (
+                                                                            <input
+                                                                                name="package_id"
+                                                                                type="hidden"
+                                                                                value={
+                                                                                    recommendation.package_id
+                                                                                }
+                                                                            />
+                                                                        ) : (
+                                                                            <input
+                                                                                name="composer_name"
+                                                                                type="hidden"
+                                                                                value={
+                                                                                    recommendation.composer_name
+                                                                                }
+                                                                            />
+                                                                        )}
+                                                                        <Button
+                                                                            className="h-7 px-2"
+                                                                            disabled={
+                                                                                processing ||
+                                                                                recommendation.is_selected
+                                                                            }
+                                                                            size="sm"
+                                                                            variant={
+                                                                                recommendation.is_selected
+                                                                                    ? 'secondary'
+                                                                                    : 'outline'
+                                                                            }
+                                                                        >
+                                                                            {recommendation.is_selected
+                                                                                ? 'In'
+                                                                                : 'Add'}
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                            </Form>
+                                                        </div>
+                                                        <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                                                            {
+                                                                recommendation.reason
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
                         <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                             {catalogPackages.map((catalogPackage) => (
                                 <Card
@@ -636,228 +853,12 @@ export default function BuilderPackages({
                     </div>
 
                     <aside className="space-y-4 2xl:sticky 2xl:top-4">
-                        <Card className="overflow-hidden rounded-xl">
-                            <CardHeader className="border-b bg-muted/40 pb-4">
-                                <CardTitle className="flex items-center justify-between gap-3 text-base">
-                                    Loadout map
-                                    <Badge variant="secondary">
-                                        {selectedCount} selected
-                                    </Badge>
-                                </CardTitle>
-                                <CardDescription>
-                                    A live overview of the dependency stack you
-                                    are composing.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4 p-4">
-                                <div className="grid grid-cols-4 gap-2">
-                                    <div className="rounded-lg border bg-background p-2">
-                                        <div className="text-lg font-semibold">
-                                            {selectedCount}
-                                        </div>
-                                        <div className="text-[11px] text-muted-foreground">
-                                            Total
-                                        </div>
-                                    </div>
-                                    <div className="rounded-lg border bg-background p-2">
-                                        <div className="text-lg font-semibold">
-                                            {productionPackageCount}
-                                        </div>
-                                        <div className="text-[11px] text-muted-foreground">
-                                            Prod
-                                        </div>
-                                    </div>
-                                    <div className="rounded-lg border bg-background p-2">
-                                        <div className="text-lg font-semibold">
-                                            {devPackageCount}
-                                        </div>
-                                        <div className="text-[11px] text-muted-foreground">
-                                            Dev
-                                        </div>
-                                    </div>
-                                    <div className="rounded-lg border bg-background p-2">
-                                        <div className="text-lg font-semibold">
-                                            {customPackages.length}
-                                        </div>
-                                        <div className="text-[11px] text-muted-foreground">
-                                            Custom
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>Stack composition</span>
-                                        <span>
-                                            {productionPackageCount} prod /{' '}
-                                            {devPackageCount} dev /{' '}
-                                            {customPackages.length} custom
-                                        </span>
-                                    </div>
-                                    <div className="flex h-2 overflow-hidden rounded-full bg-muted">
-                                        <div
-                                            className="bg-emerald-500"
-                                            style={{
-                                                width: `${productionWidth}%`,
-                                            }}
-                                        />
-                                        <div
-                                            className="bg-sky-500"
-                                            style={{ width: `${devWidth}%` }}
-                                        />
-                                        <div
-                                            className="bg-amber-500"
-                                            style={{ width: `${customWidth}%` }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <Form
-                                    className="grid gap-2 rounded-lg border bg-background p-3"
-                                    onSuccess={() => setCustomPackageUrl('')}
-                                    options={{ preserveScroll: true }}
-                                    {...storeCustomPackage.form()}
-                                >
-                                    {({ errors, processing }) => (
-                                        <>
-                                            <div>
-                                                <div className="text-sm font-medium">
-                                                    Drop in a custom package
-                                                </div>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Used only in this loadout
-                                                    until curated globally.
-                                                </p>
-                                            </div>
-                                            <Input
-                                                name="package_url"
-                                                value={customPackageUrl}
-                                                onChange={(event) =>
-                                                    setCustomPackageUrl(
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                placeholder="https://packagist.org/packages/vendor/name"
-                                            />
-                                            {errors.package_url && (
-                                                <p className="text-xs text-destructive">
-                                                    {errors.package_url}
-                                                </p>
-                                            )}
-                                            <Button
-                                                className="w-full"
-                                                disabled={
-                                                    processing ||
-                                                    !customPackageUrl
-                                                }
-                                                size="sm"
-                                            >
-                                                <Plus className="size-4" />
-                                                Add custom package
-                                            </Button>
-                                        </>
-                                    )}
-                                </Form>
-
-                                {packageRecommendations.length > 0 && (
-                                    <div className="space-y-2">
-                                        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                            Suggested by runtime
-                                        </div>
-                                        <div className="space-y-2">
-                                            {packageRecommendations.map(
-                                                (recommendation) => (
-                                                    <div
-                                                        key={
-                                                            recommendation.composer_name
-                                                        }
-                                                        className="rounded-lg border border-dashed p-3"
-                                                    >
-                                                        <div className="flex items-start justify-between gap-3">
-                                                            <div className="min-w-0">
-                                                                <div className="truncate text-sm font-medium">
-                                                                    {
-                                                                        recommendation.title
-                                                                    }
-                                                                </div>
-                                                                <div className="truncate font-mono text-xs text-muted-foreground">
-                                                                    {
-                                                                        recommendation.composer_name
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                            <Form
-                                                                options={{
-                                                                    preserveScroll: true,
-                                                                }}
-                                                                {...storeLoadoutPackage.form()}
-                                                            >
-                                                                {({
-                                                                    processing,
-                                                                }) => (
-                                                                    <>
-                                                                        {recommendation.package_id ? (
-                                                                            <input
-                                                                                name="package_id"
-                                                                                type="hidden"
-                                                                                value={
-                                                                                    recommendation.package_id
-                                                                                }
-                                                                            />
-                                                                        ) : (
-                                                                            <input
-                                                                                name="composer_name"
-                                                                                type="hidden"
-                                                                                value={
-                                                                                    recommendation.composer_name
-                                                                                }
-                                                                            />
-                                                                        )}
-                                                                        <Button
-                                                                            className="h-7 px-2"
-                                                                            disabled={
-                                                                                processing ||
-                                                                                recommendation.is_selected
-                                                                            }
-                                                                            size="sm"
-                                                                            variant={
-                                                                                recommendation.is_selected
-                                                                                    ? 'secondary'
-                                                                                    : 'outline'
-                                                                            }
-                                                                        >
-                                                                            {recommendation.is_selected
-                                                                                ? 'In'
-                                                                                : 'Add'}
-                                                                        </Button>
-                                                                    </>
-                                                                )}
-                                                            </Form>
-                                                        </div>
-                                                        <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
-                                                            {
-                                                                recommendation.reason
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
                         <Card className="rounded-xl">
                             <CardHeader className="pb-3">
                                 <CardTitle className="flex items-center justify-between gap-3 text-base">
                                     Dependency stack
                                     <PackageCheck className="size-4 text-muted-foreground" />
                                 </CardTitle>
-                                <CardDescription>
-                                    Collapsed by default so long loadouts stay
-                                    scannable.
-                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="max-h-[46vh] space-y-2 overflow-y-auto pr-1">
