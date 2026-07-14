@@ -29,8 +29,12 @@ class PackageCatalogController extends Controller
             ->pluck('package_id')
             ->all();
 
+        $filters = $request->filters();
         $packages = $catalog
-            ->search($request->filters())
+            ->search([
+                ...$filters,
+                'exclude_ids' => $selectedPackageIds,
+            ])
             ->through(fn (Package $package): array => [
                 'id' => $package->id,
                 'name' => $package->name,
@@ -74,7 +78,7 @@ class PackageCatalogController extends Controller
                     ->all(),
             ],
             'recommendations' => $this->recommendations($advisor, $loadout, $selectedPackageIds),
-            'filters' => (object) $request->filters(),
+            'filters' => (object) $filters,
         ]);
     }
 

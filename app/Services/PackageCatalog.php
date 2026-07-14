@@ -20,6 +20,7 @@ class PackageCatalog
      *     laravel_version?: string|null,
      *     sort?: string|null,
      *     per_page?: int|null,
+     *     exclude_ids?: array<int, int>,
      * }  $filters
      * @return LengthAwarePaginator<int, Package>
      */
@@ -35,6 +36,7 @@ class PackageCatalog
         $this->applyFeatured($query, Arr::get($filters, 'featured'));
         $this->applyRequiredService($query, Arr::get($filters, 'service'));
         $this->applyLaravelVersion($query, Arr::get($filters, 'laravel_version'));
+        $this->applyExcludedIds($query, Arr::get($filters, 'exclude_ids'));
         $this->applySort($query, Arr::get($filters, 'sort'), Arr::get($filters, 'search'));
 
         return $query->paginate($this->perPage(Arr::get($filters, 'per_page')));
@@ -126,6 +128,27 @@ class PackageCatalog
         }
 
         $query->whereJsonContains('laravel_version_constraints', trim($laravelVersion));
+    }
+
+    /**
+     * @param  Builder<Package>  $query
+     */
+    private function applyExcludedIds(Builder $query, mixed $excludedIds): void
+    {
+        if (! is_array($excludedIds) || $excludedIds === []) {
+            return;
+        }
+
+        $ids = collect($excludedIds)
+            ->filter(fn (mixed $id): bool => is_int($id))
+            ->values()
+            ->all();
+
+        if ($ids === []) {
+            return;
+        }
+
+        $query->whereNotIn('id', $ids);
     }
 
     /**

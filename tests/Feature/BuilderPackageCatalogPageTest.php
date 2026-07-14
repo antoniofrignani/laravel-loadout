@@ -225,7 +225,8 @@ class BuilderPackageCatalogPageTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('loadout.selected_packages', 1)
-                ->where('loadout.selected_packages.0.composer_name', 'spatie/laravel-permission'),
+                ->where('loadout.selected_packages.0.composer_name', 'spatie/laravel-permission')
+                ->has('packages.data', 0),
             );
     }
 
@@ -371,7 +372,9 @@ class BuilderPackageCatalogPageTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('loadout.selected_package_ids', [])
-                ->where('loadout.selected_packages', []),
+                ->where('loadout.selected_packages', [])
+                ->has('packages.data', 1)
+                ->where('packages.data.0.composer_name', 'spatie/laravel-permission'),
             );
     }
 
