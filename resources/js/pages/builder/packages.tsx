@@ -8,12 +8,14 @@ import {
     RefreshCw,
     Search,
     Star,
+    Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { store as storeCustomPackage } from '@/actions/App/Http/Controllers/Builder/CustomPackageController';
 import {
+    destroy as destroyLoadoutPackage,
     store as storeLoadoutPackage,
     update as updateLoadoutPackage,
 } from '@/actions/App/Http/Controllers/Builder/LoadoutPackageController';
@@ -958,6 +960,25 @@ export default function BuilderPackages({
                                                             </>
                                                         )}
                                                     </Form>
+                                                    <Button
+                                                        className="mt-2 h-8 w-full text-destructive hover:text-destructive"
+                                                        onClick={() =>
+                                                            router.delete(
+                                                                destroyLoadoutPackage.url(
+                                                                    selectedPackage.id,
+                                                                ),
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            )
+                                                        }
+                                                        size="sm"
+                                                        type="button"
+                                                        variant="ghost"
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                        Remove package
+                                                    </Button>
                                                 </details>
                                             ),
                                         )
@@ -987,14 +1008,38 @@ export default function BuilderPackages({
                                             {customPackages.map((pkg) => (
                                                 <div
                                                     key={pkg.id}
-                                                    className="rounded-md bg-muted px-3 py-2 text-sm"
+                                                    className="flex items-center justify-between gap-3 rounded-md bg-muted px-3 py-2 text-sm"
                                                 >
-                                                    <div className="truncate font-medium">
-                                                        {pkg.display_name}
+                                                    <div className="min-w-0">
+                                                        <div className="truncate font-medium">
+                                                            {pkg.display_name}
+                                                        </div>
+                                                        <div className="truncate font-mono text-xs text-muted-foreground">
+                                                            {pkg.composer_name}
+                                                        </div>
                                                     </div>
-                                                    <div className="truncate font-mono text-xs text-muted-foreground">
-                                                        {pkg.composer_name}
-                                                    </div>
+                                                    <Button
+                                                        className="size-8 shrink-0 text-destructive hover:text-destructive"
+                                                        onClick={() =>
+                                                            router.delete(
+                                                                destroyLoadoutPackage.url(
+                                                                    pkg.id,
+                                                                ),
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            )
+                                                        }
+                                                        size="icon"
+                                                        type="button"
+                                                        variant="ghost"
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                        <span className="sr-only">
+                                                            Remove{' '}
+                                                            {pkg.display_name}
+                                                        </span>
+                                                    </Button>
                                                 </div>
                                             ))}
                                         </div>

@@ -11,6 +11,7 @@ use App\Models\PackageCategory;
 use App\Services\LoadoutBuilder;
 use App\Services\PackageCompatibilityAdvisor;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class LoadoutPackageController extends Controller
@@ -45,6 +46,17 @@ class LoadoutPackageController extends Controller
         ])->save();
 
         return back()->with('status', 'package-configured');
+    }
+
+    public function destroy(Request $request, LoadoutPackage $loadoutPackage, LoadoutBuilder $builder): RedirectResponse
+    {
+        $loadout = $builder->currentDraft($request->session(), $request->user());
+
+        abort_unless($loadoutPackage->loadout_id === $loadout->id, 404);
+
+        $loadoutPackage->delete();
+
+        return back()->with('status', 'package-removed');
     }
 
     /**

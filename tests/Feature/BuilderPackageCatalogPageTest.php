@@ -342,6 +342,56 @@ class BuilderPackageCatalogPageTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_selected_package_can_be_removed_from_the_current_draft(): void
+    {
+        $this->withoutVite();
+
+        $package = Package::factory()->create([
+            'name' => 'Laravel Permission',
+            'composer_name' => 'spatie/laravel-permission',
+        ]);
+
+        $this->get(route('builder.packages'))->assertOk();
+        $this->post(route('builder.packages.store'), [
+            'package_id' => $package->id,
+        ])->assertRedirect(route('builder.packages'));
+
+        $selection = LoadoutPackage::query()->firstOrFail();
+
+        $this
+            ->from(route('builder.packages'))
+            ->delete(route('builder.packages.destroy', $selection))
+            ->assertRedirect(route('builder.packages'));
+
+        $this->assertDatabaseMissing('loadout_packages', [
+            'id' => $selection->id,
+        ]);
+
+        $this->get(route('builder.packages'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('loadout.selected_package_ids', [])
+                ->where('loadout.selected_packages', []),
+            );
+    }
+
+    public function test_selected_package_removal_must_belong_to_current_draft(): void
+    {
+        $this->withoutVite();
+
+        $foreignSelection = LoadoutPackage::factory()->create();
+
+        $this->get(route('builder.packages'))->assertOk();
+
+        $this
+            ->delete(route('builder.packages.destroy', $foreignSelection))
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('loadout_packages', [
+            'id' => $foreignSelection->id,
+        ]);
+    }
+
     public function test_custom_package_url_is_added_only_to_the_current_draft_loadout(): void
     {
         $this->withoutVite();
