@@ -34,4 +34,21 @@ class PackageCatalogSeederTest extends TestCase
                 ->exists(),
         );
     }
+
+    public function test_it_seeds_laravel_fuse_as_curated_package(): void
+    {
+        $this->seed(PackageCatalogSeeder::class);
+
+        $package = Package::query()
+            ->where('composer_name', 'harris21/laravel-fuse')
+            ->firstOrFail();
+
+        $this->assertSame('Laravel Fuse', $package->name);
+        $this->assertTrue($package->is_featured);
+        $this->assertSame('curated', $package->status->value);
+        $this->assertSame('integrations', $package->category?->slug);
+        $this->assertSame('https://github.com/harris21/laravel-fuse', $package->github_url);
+        $this->assertContains('circuit-breaker', $package->tags);
+        $this->assertSame(['php artisan vendor:publish --tag=fuse-config'], $package->publish_commands);
+    }
 }

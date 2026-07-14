@@ -132,6 +132,17 @@ class PackageCatalogSeeder extends Seeder
                 'tags' => ['admin', 'dashboard', 'forms'],
                 'post_install_commands' => ['php artisan filament:install --panels'],
             ],
+            [
+                'category' => 'integrations',
+                'name' => 'Laravel Fuse',
+                'composer_name' => 'harris21/laravel-fuse',
+                'description' => 'Circuit breaker middleware for Laravel queue jobs that protects workers when external services fail.',
+                'tags' => ['queues', 'circuit-breaker', 'resilience', 'external-services'],
+                'source_url' => 'https://github.com/harris21/laravel-fuse',
+                'github_url' => 'https://github.com/harris21/laravel-fuse',
+                'docs_url' => 'https://github.com/harris21/laravel-fuse#readme',
+                'publish_commands' => ['php artisan vendor:publish --tag=fuse-config'],
+            ],
         ];
 
         $packages = array_merge($packages, $this->laravelNewsPackages());
