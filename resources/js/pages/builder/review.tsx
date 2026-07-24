@@ -1,7 +1,5 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import {
-    ArrowLeft,
-    Download,
     ExternalLink,
     PackageCheck,
     Share2,
@@ -9,6 +7,7 @@ import {
 
 import PublishController from '@/actions/App/Http/Controllers/Builder/PublishController';
 import { ArtifactBrowser } from '@/components/artifact-browser';
+import { BuilderStepNavigation } from '@/components/builder-step-navigation';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -26,6 +25,7 @@ import {
 type Loadout = {
     id: number;
     title: string;
+    public_id: string;
     slug: string;
     is_shareable: boolean;
     share_url: string | null;
@@ -46,8 +46,8 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
     return (
         <>
             <Head title="Review and Generate" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
-                <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 pb-24 md:p-6 md:pb-24">
+                <header>
                     <div>
                         <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                             <span>Step 6</span>
@@ -66,20 +66,6 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                             .
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        <Button asChild variant="outline">
-                            <Link href={builderPackages.url()}>
-                                <ArrowLeft className="size-4" />
-                                Back to packages
-                            </Link>
-                        </Button>
-                        <Button asChild>
-                            <a href={builderDownload.url()}>
-                                <Download className="size-4" />
-                                Download zip
-                            </a>
-                        </Button>
-                    </div>
                 </header>
 
                 <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -97,9 +83,11 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                         <CardContent className="space-y-3 text-sm">
                             <div>
                                 <div className="text-muted-foreground">
-                                    Loadout slug
+                                    Share ID
                                 </div>
-                                <div className="font-mono">{loadout.slug}</div>
+                                <div className="font-mono">
+                                    {loadout.public_id}
+                                </div>
                             </div>
                             <div>
                                 <div className="text-muted-foreground">
@@ -153,6 +141,17 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
 
                     <ArtifactBrowser artifacts={artifacts} />
                 </section>
+
+                <BuilderStepNavigation
+                    next={{
+                        href: builderDownload.url(),
+                        label: 'Download zip',
+                        download: true,
+                        external: true,
+                    }}
+                    previous={{ href: builderPackages.url(), label: 'Packages' }}
+                    step={6}
+                />
             </div>
         </>
     );

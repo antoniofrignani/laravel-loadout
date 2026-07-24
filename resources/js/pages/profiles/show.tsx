@@ -25,6 +25,7 @@ type Profile = {
 type PublicLoadout = {
     id: number;
     title: string;
+    public_id: string;
     slug: string;
     description: string | null;
     packages_count: number;
@@ -42,7 +43,16 @@ type PublicCollection = {
 };
 
 type ActivityItem = {
-    type: 'loadout' | 'collection';
+    type: 'loadout';
+    title: string;
+    slug: string;
+    public_id: string;
+    description: string | null;
+    occurred_at: string | null;
+    metric_label: string;
+    metric_value: number;
+} | {
+    type: 'collection';
     title: string;
     slug: string;
     description: string | null;
@@ -256,7 +266,7 @@ export default function ProfileShow({
                                         <Button asChild>
                                             <Link
                                                 href={showLoadout.url(
-                                                    loadout.slug,
+                                                    loadout.public_id,
                                                 )}
                                             >
                                                 View template
@@ -286,7 +296,7 @@ export default function ProfileShow({
 function ActivityCard({ item }: { item: ActivityItem }) {
     const href =
         item.type === 'loadout'
-            ? showLoadout.url(item.slug)
+            ? showLoadout.url(item.public_id)
             : showCollection.url(item.slug);
 
     return (

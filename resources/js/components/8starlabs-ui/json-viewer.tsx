@@ -686,7 +686,7 @@ const JsonObject: React.FC<{
       onClick={
         collapseOn === "doubleClick"
           ? undefined
-          : (e) => {
+          : () => {
               toggleNode(path);
             }
       }
@@ -847,7 +847,7 @@ const JsonArray: React.FC<{
       onClick={
         collapseOn === "doubleClick"
           ? undefined
-          : (e) => {
+          : () => {
               toggleNode(path);
             }
       }

@@ -24,6 +24,7 @@ class LoadoutCollaboratorController extends Controller
             'loadout' => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
+                'public_id' => $loadout->public_id,
                 'slug' => $loadout->slug,
             ],
             'collaborators' => $loadout->collaborators

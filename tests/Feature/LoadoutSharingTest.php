@@ -71,6 +71,25 @@ class LoadoutSharingTest extends TestCase
             );
     }
 
+    public function test_share_url_uses_a_permanent_public_id_instead_of_the_loadout_title(): void
+    {
+        $loadout = Loadout::factory()->create([
+            'title' => 'Original Name',
+            'slug' => 'original-name',
+            'visibility' => LoadoutVisibility::Unlisted,
+            'published_at' => now(),
+        ]);
+
+        $shareUrl = route('loadouts.show', $loadout);
+
+        $loadout->update(['title' => 'Renamed Loadout']);
+
+        $this->assertSame($shareUrl, route('loadouts.show', $loadout));
+        $this->assertStringContainsString('/l/'.$loadout->public_id, $shareUrl);
+        $this->assertStringNotContainsString('original-name', $shareUrl);
+        $this->get($shareUrl)->assertOk();
+    }
+
     public function test_private_loadout_share_page_is_not_visible(): void
     {
         $loadout = Loadout::factory()->create([

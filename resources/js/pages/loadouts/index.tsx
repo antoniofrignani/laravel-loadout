@@ -17,6 +17,7 @@ import { index as collaboratorsIndex } from '@/routes/loadouts/collaborators';
 type Loadout = {
     id: number;
     title: string;
+    public_id: string;
     slug: string;
     description: string | null;
     visibility: 'private' | 'unlisted' | 'public';
@@ -158,7 +159,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
 
                                     <div className="flex flex-wrap gap-2">
                                         {loadout.can_edit ? (
-                                            <Form {...resume.form(loadout.slug)}>
+                                            <Form {...resume.form(loadout.public_id)}>
                                                 {({ processing }) => (
                                                     <Button
                                                         type="submit"
@@ -180,7 +181,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                             !loadout.can_edit) && (
                                             <Button asChild variant="outline">
                                                 <Link
-                                                    href={show.url(loadout.slug)}
+                                                    href={show.url(loadout.public_id)}
                                                 >
                                                     {loadout.visibility ===
                                                     'private'
@@ -193,7 +194,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                             <Button asChild variant="ghost">
                                                 <Link
                                                     href={collaboratorsIndex.url(
-                                                        loadout.slug,
+                                                        loadout.public_id,
                                                     )}
                                                 >
                                                     Collaborators

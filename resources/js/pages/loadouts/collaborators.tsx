@@ -27,6 +27,7 @@ import {
 type Loadout = {
     id: number;
     title: string;
+    public_id: string;
     slug: string;
 };
 
@@ -86,7 +87,7 @@ export default function LoadoutCollaborators({
                         </CardHeader>
                         <CardContent>
                             <Form
-                                {...store.form(loadout.slug)}
+                                {...store.form(loadout.public_id)}
                                 resetOnSuccess
                                 className="space-y-4"
                             >
@@ -185,7 +186,7 @@ export default function LoadoutCollaborators({
                                             </Badge>
                                             <Form
                                                 {...destroy.form({
-                                                    loadout: loadout.slug,
+                                                    loadout: loadout.public_id,
                                                     collaborator:
                                                         collaborator.id,
                                                 })}

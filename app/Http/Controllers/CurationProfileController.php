@@ -27,6 +27,7 @@ class CurationProfileController extends Controller
             ->map(fn (Loadout $loadout): array => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
+                'public_id' => $loadout->public_id,
                 'slug' => $loadout->slug,
                 'description' => $loadout->description,
                 'packages_count' => (int) $loadout->getAttribute('packages_count'),
@@ -73,7 +74,7 @@ class CurationProfileController extends Controller
     /**
      * @param  array<int, Loadout>  $loadouts
      * @param  array<int, PackageCollection>  $collections
-     * @return array<int, array{type: string, title: string, slug: string, description: string|null, occurred_at: string|null, metric_label: string, metric_value: int}>
+     * @return array<int, array{type: string, title: string, slug: string, public_id?: string|null, description: string|null, occurred_at: string|null, metric_label: string, metric_value: int}>
      */
     private function activity(array $loadouts, array $collections): array
     {
@@ -84,6 +85,7 @@ class CurationProfileController extends Controller
                 'type' => 'loadout',
                 'title' => $loadout->title,
                 'slug' => $loadout->slug,
+                'public_id' => $loadout->public_id,
                 'description' => $loadout->description,
                 'occurred_at' => $loadout->published_at?->toFormattedDateString(),
                 'occurred_at_sort' => $loadout->published_at?->getTimestamp() ?? 0,

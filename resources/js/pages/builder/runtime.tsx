@@ -1,8 +1,8 @@
-import { Form, Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, Database, ServerCog } from 'lucide-react';
+import { Form, Head } from '@inertiajs/react';
+import { Database, ServerCog } from 'lucide-react';
 
 import RuntimeController from '@/actions/App/Http/Controllers/Builder/RuntimeController';
-import { Button } from '@/components/ui/button';
+import { BuilderStepNavigation } from '@/components/builder-step-navigation';
 import {
     Card,
     CardContent,
@@ -41,7 +41,7 @@ export default function Runtime({ values }: Props) {
     return (
         <>
             <Head title="Runtime" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 pb-24 md:p-6 md:pb-24">
                 <header className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>Step 3</span>
@@ -70,10 +70,11 @@ export default function Runtime({ values }: Props) {
                         </CardHeader>
                         <CardContent>
                             <Form
+                                id="runtime-form"
                                 className="grid gap-5"
                                 {...RuntimeController.update.form()}
                             >
-                                {({ errors, processing }) => (
+                                {({ errors }) => (
                                     <>
                                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                                             <RuntimeSelect
@@ -142,18 +143,6 @@ export default function Runtime({ values }: Props) {
                                             />
                                         </div>
 
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button asChild variant="outline">
-                                                <Link href={builderStarter.url()}>
-                                                    <ArrowLeft className="size-4" />
-                                                    Back
-                                                </Link>
-                                            </Button>
-                                            <Button disabled={processing}>
-                                                Save and continue
-                                                <ArrowRight className="size-4" />
-                                            </Button>
-                                        </div>
                                     </>
                                 )}
                             </Form>
@@ -181,6 +170,12 @@ export default function Runtime({ values }: Props) {
                         </CardContent>
                     </Card>
                 </section>
+
+                <BuilderStepNavigation
+                    previous={{ href: builderStarter.url(), label: 'Starter' }}
+                    step={3}
+                    submitFormId="runtime-form"
+                />
             </div>
         </>
     );

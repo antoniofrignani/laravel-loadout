@@ -33,6 +33,7 @@ class LoadoutLibraryController extends Controller
                 return [
                     'id' => $loadout->id,
                     'title' => $loadout->title,
+                    'public_id' => $loadout->public_id,
                     'slug' => $loadout->slug,
                     'description' => $loadout->description,
                     'visibility' => $loadout->visibility->value,

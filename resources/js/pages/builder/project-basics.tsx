@@ -1,8 +1,8 @@
-import { Form, Head, Link } from '@inertiajs/react';
-import { ArrowRight, Boxes, Info } from 'lucide-react';
+import { Form, Head } from '@inertiajs/react';
+import { Boxes, Info } from 'lucide-react';
 
 import ProjectBasicsController from '@/actions/App/Http/Controllers/Builder/ProjectBasicsController';
-import { Button } from '@/components/ui/button';
+import { BuilderStepNavigation } from '@/components/builder-step-navigation';
 import {
     Card,
     CardContent,
@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { project as builderProject, starter as builderStarter } from '@/routes/builder';
+import { project as builderProject } from '@/routes/builder';
 
 type Values = {
     project_name: string;
@@ -39,7 +39,7 @@ export default function ProjectBasics({ values }: Props) {
     return (
         <>
             <Head title="Project Basics" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 pb-24 md:p-6 md:pb-24">
                 <header className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>Step 1</span>
@@ -68,10 +68,11 @@ export default function ProjectBasics({ values }: Props) {
                         </CardHeader>
                         <CardContent>
                             <Form
+                                id="project-basics-form"
                                 className="grid gap-5"
                                 {...ProjectBasicsController.update.form()}
                             >
-                                {({ errors, processing }) => (
+                                {({ errors }) => (
                                     <>
                                         <div className="grid gap-2">
                                             <Label htmlFor="project_name">
@@ -190,19 +191,6 @@ export default function ProjectBasics({ values }: Props) {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button disabled={processing}>
-                                                Save and continue
-                                                <ArrowRight className="size-4" />
-                                            </Button>
-                                            <Button asChild variant="outline">
-                                                <Link
-                                                    href={builderStarter.url()}
-                                                >
-                                                    Skip to starter
-                                                </Link>
-                                            </Button>
-                                        </div>
                                     </>
                                 )}
                             </Form>
@@ -230,6 +218,11 @@ export default function ProjectBasics({ values }: Props) {
                         </CardContent>
                     </Card>
                 </section>
+
+                <BuilderStepNavigation
+                    step={1}
+                    submitFormId="project-basics-form"
+                />
             </div>
         </>
     );

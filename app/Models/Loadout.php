@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
+ * @property string|null $public_id
  * @property int|null $user_id
  * @property int|null $source_loadout_id
  * @property string $title
@@ -57,7 +59,14 @@ class Loadout extends Model
 
     public function getRouteKeyName(): string
     {
-        return 'slug';
+        return 'public_id';
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Loadout $loadout): void {
+            $loadout->public_id ??= (string) Str::ulid();
+        });
     }
 
     /**

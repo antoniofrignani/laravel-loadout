@@ -26,6 +26,7 @@ import { show as showProfile } from '@/routes/profiles';
 type DiscoveryLoadout = {
     id: number;
     title: string;
+    public_id: string;
     slug: string;
     description: string | null;
     author_name: string | null;
@@ -242,7 +243,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                             <Button asChild>
                                                 <Link
                                                     href={show.url(
-                                                        loadout.slug,
+                                                        loadout.public_id,
                                                     )}
                                                 >
                                                     View template
@@ -251,7 +252,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                             <Button asChild variant="outline">
                                                 <Link
                                                     href={clone.url(
-                                                        loadout.slug,
+                                                        loadout.public_id,
                                                     )}
                                                     method="post"
                                                     as="button"

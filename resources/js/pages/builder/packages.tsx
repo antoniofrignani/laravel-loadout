@@ -1,7 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
-    ArrowLeft,
-    ArrowRight,
     Download,
     PackagePlus,
     Plus,
@@ -19,6 +17,7 @@ import {
     store as storeLoadoutPackage,
     update as updateLoadoutPackage,
 } from '@/actions/App/Http/Controllers/Builder/LoadoutPackageController';
+import { BuilderStepNavigation } from '@/components/builder-step-navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -262,7 +261,7 @@ export default function BuilderPackages({
     return (
         <>
             <Head title="Packages" />
-            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto p-4 pb-24 md:p-6 md:pb-24">
                 <header className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>Step 5</span>
@@ -280,25 +279,13 @@ export default function BuilderPackages({
                                 you need them.
                             </p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm">
                                 <PackagePlus className="size-4 text-muted-foreground" />
                                 <span>
                                     {packages?.total ?? 0} matching packages
                                 </span>
                             </div>
-                            <Button asChild variant="outline">
-                                <Link href={builderRuntime.url()}>
-                                    <ArrowLeft className="size-4" />
-                                    Back to runtime
-                                </Link>
-                            </Button>
-                            <Button asChild>
-                                <Link href={builderReview.url()}>
-                                    Review
-                                    <ArrowRight className="size-4" />
-                                </Link>
-                            </Button>
                         </div>
                     </div>
                 </header>
@@ -1047,28 +1034,16 @@ export default function BuilderPackages({
                                     </div>
                                 )}
 
-                                <div className="flex gap-2 pt-1">
-                                    <Button
-                                        asChild
-                                        className="flex-1"
-                                        variant="outline"
-                                    >
-                                        <Link href={builderRuntime.url()}>
-                                            <ArrowLeft className="size-4" />
-                                            Runtime
-                                        </Link>
-                                    </Button>
-                                    <Button asChild className="flex-1">
-                                        <Link href={builderReview.url()}>
-                                            Review
-                                            <ArrowRight className="size-4" />
-                                        </Link>
-                                    </Button>
-                                </div>
                             </CardContent>
                         </Card>
                     </aside>
                 </section>
+
+                <BuilderStepNavigation
+                    next={{ href: builderReview.url(), label: 'Review' }}
+                    previous={{ href: builderRuntime.url(), label: 'Runtime' }}
+                    step={5}
+                />
             </div>
         </>
     );

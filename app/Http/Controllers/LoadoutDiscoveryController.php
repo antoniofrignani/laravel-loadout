@@ -21,6 +21,7 @@ class LoadoutDiscoveryController extends Controller
             ->select([
                 'id',
                 'user_id',
+                'public_id',
                 'title',
                 'slug',
                 'description',
@@ -56,6 +57,7 @@ class LoadoutDiscoveryController extends Controller
             ->map(fn (Loadout $loadout): array => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
+                'public_id' => $loadout->public_id,
                 'slug' => $loadout->slug,
                 'description' => $loadout->description,
                 'author_name' => $loadout->user?->name,

@@ -43,9 +43,9 @@ Route::post('builder/custom-packages', [CustomPackageController::class, 'store']
 Route::get('builder/review', ReviewController::class)->name('builder.review');
 Route::get('builder/download', DownloadController::class)->name('builder.download');
 Route::post('builder/publish', PublishController::class)->name('builder.publish');
-Route::get('loadouts/{loadout:slug}/download', LoadoutDownloadController::class)->name('loadouts.download');
-Route::post('loadouts/{loadout:slug}/clone', LoadoutCloneController::class)->name('loadouts.clone');
-Route::get('loadouts/{loadout:slug}', LoadoutShowController::class)->name('loadouts.show');
+Route::get('l/{loadout:public_id}/download', LoadoutDownloadController::class)->name('loadouts.download');
+Route::post('l/{loadout:public_id}/clone', LoadoutCloneController::class)->name('loadouts.clone');
+Route::get('l/{loadout:public_id}', LoadoutShowController::class)->name('loadouts.show');
 Route::get('package-suggestions/{package_suggestion}/approve', [PackageSuggestionModerationController::class, 'approve'])
     ->middleware('signed')
     ->name('package-suggestions.approve');
@@ -59,12 +59,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('package-collections/{package_collection:slug}/items', [PackageCollectionItemController::class, 'store'])->name('package-collections.items.store');
     Route::delete('package-collections/{package_collection:slug}/items/{item}', [PackageCollectionItemController::class, 'destroy'])->name('package-collections.items.destroy');
     Route::get('loadouts', LoadoutLibraryController::class)->name('loadouts.index');
-    Route::post('loadouts/{loadout:slug}/resume', LoadoutResumeController::class)->name('loadouts.resume');
-    Route::get('loadouts/{loadout:slug}/collaborators', [LoadoutCollaboratorController::class, 'index'])->name('loadouts.collaborators.index');
-    Route::post('loadouts/{loadout:slug}/collaborators', [LoadoutCollaboratorController::class, 'store'])->name('loadouts.collaborators.store');
-    Route::delete('loadouts/{loadout:slug}/collaborators/{collaborator}', [LoadoutCollaboratorController::class, 'destroy'])->name('loadouts.collaborators.destroy');
-    Route::post('loadouts/{loadout:slug}/stars', [LoadoutStarController::class, 'store'])->name('loadouts.stars.store');
-    Route::delete('loadouts/{loadout:slug}/stars', [LoadoutStarController::class, 'destroy'])->name('loadouts.stars.destroy');
+    Route::post('loadouts/{loadout:public_id}/resume', LoadoutResumeController::class)->name('loadouts.resume');
+    Route::get('loadouts/{loadout:public_id}/collaborators', [LoadoutCollaboratorController::class, 'index'])->name('loadouts.collaborators.index');
+    Route::post('loadouts/{loadout:public_id}/collaborators', [LoadoutCollaboratorController::class, 'store'])->name('loadouts.collaborators.store');
+    Route::delete('loadouts/{loadout:public_id}/collaborators/{collaborator}', [LoadoutCollaboratorController::class, 'destroy'])->name('loadouts.collaborators.destroy');
+    Route::post('loadouts/{loadout:public_id}/stars', [LoadoutStarController::class, 'store'])->name('loadouts.stars.store');
+    Route::delete('loadouts/{loadout:public_id}/stars', [LoadoutStarController::class, 'destroy'])->name('loadouts.stars.destroy');
 });
 
 require __DIR__.'/settings.php';

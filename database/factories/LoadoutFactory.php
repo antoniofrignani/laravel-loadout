@@ -24,6 +24,7 @@ class LoadoutFactory extends Factory
 
         return [
             'user_id' => User::factory(),
+            'public_id' => (string) Str::ulid(),
             'title' => Str::headline($title),
             'slug' => Str::slug($title).'-'.Str::lower(Str::random(6)),
             'description' => fake()->sentence(),

@@ -20,6 +20,7 @@ class ReviewController extends Controller
             'loadout' => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
+                'public_id' => $loadout->public_id,
                 'slug' => $loadout->slug,
                 'is_shareable' => $loadout->visibility !== LoadoutVisibility::Private,
                 'share_url' => $loadout->visibility !== LoadoutVisibility::Private

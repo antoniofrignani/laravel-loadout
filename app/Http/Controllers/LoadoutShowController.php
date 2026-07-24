@@ -26,6 +26,7 @@ class LoadoutShowController extends Controller
         return Inertia::render('loadouts/show', [
             'loadout' => [
                 'title' => $loadout->title,
+                'public_id' => $loadout->public_id,
                 'slug' => $loadout->slug,
                 'description' => $loadout->description,
                 'visibility' => $loadout->visibility->value,

@@ -23,6 +23,7 @@ import {
 
 type Loadout = {
     title: string;
+    public_id: string;
     slug: string;
     description: string | null;
     visibility: string;
@@ -88,8 +89,8 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                             {loadout.can_star ? (
                                 <Form
                                     {...(loadout.viewer_has_starred
-                                        ? unstarLoadout.form(loadout.slug)
-                                        : starLoadout.form(loadout.slug))}
+                                        ? unstarLoadout.form(loadout.public_id)
+                                        : starLoadout.form(loadout.public_id))}
                                 >
                                     {({ processing }) => (
                                         <Button
@@ -132,7 +133,7 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                 </Button>
                             )}
                             {loadout.can_clone && (
-                                <Form {...LoadoutCloneController.form(loadout.slug)}>
+                                <Form {...LoadoutCloneController.form(loadout.public_id)}>
                                     {({ processing }) => (
                                         <Button
                                             type="submit"
@@ -147,7 +148,7 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                             )}
                             {loadout.can_download && (
                                 <Button asChild>
-                                    <a href={downloadLoadout.url({ loadout: loadout.slug })}>
+                                    <a href={downloadLoadout.url({ loadout: loadout.public_id })}>
                                         <Download className="size-4" />
                                         Download zip
                                     </a>
