@@ -1,6 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
-import { Boxes, GitFork, PackageCheck, Search, Sparkles, Star } from 'lucide-react';
+import {
+    Boxes,
+    GitFork,
+    PackageCheck,
+    Search,
+    Sparkles,
+    Star,
+} from 'lucide-react';
 
+import NewLoadoutController from '@/actions/App/Http/Controllers/Builder/NewLoadoutController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +27,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { discover, home } from '@/routes';
-import { project } from '@/routes/builder';
 import { clone, show } from '@/routes/loadouts';
 import { show as showProfile } from '@/routes/profiles';
 
@@ -77,7 +84,8 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                     </Link>
                                 </div>
                                 <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">
-                                    Start from a stack someone has already thought through.
+                                    Start from a stack someone has already
+                                    thought through.
                                 </h1>
                                 <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
                                     Explore public loadouts, inspect the files
@@ -86,7 +94,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                 </p>
                                 <div className="mt-7 flex flex-wrap gap-3">
                                     <Button asChild>
-                                        <Link href={project.url()}>
+                                        <Link href={NewLoadoutController()}>
                                             <Sparkles className="size-4" />
                                             Start a fresh loadout
                                         </Link>
@@ -143,10 +151,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                 <span className="text-sm font-medium">
                                     Sort
                                 </span>
-                                <Select
-                                    name="sort"
-                                    defaultValue={filters.sort}
-                                >
+                                <Select name="sort" defaultValue={filters.sort}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
@@ -165,7 +170,8 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
 
                             <div className="flex gap-2">
                                 <Button type="submit">Apply</Button>
-                                {(filters.search || filters.sort !== 'popular') && (
+                                {(filters.search ||
+                                    filters.sort !== 'popular') && (
                                     <Button asChild variant="ghost">
                                         <Link href={discover()}>Reset</Link>
                                     </Button>

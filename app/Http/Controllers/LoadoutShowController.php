@@ -7,13 +7,14 @@ use App\Models\Loadout;
 use App\Models\User;
 use App\Services\ArtifactGenerator;
 use App\Services\LoadoutAccess;
+use App\Services\LoadoutOverview;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LoadoutShowController extends Controller
 {
-    public function __invoke(Request $request, Loadout $loadout, ArtifactGenerator $generator, LoadoutAccess $access): Response
+    public function __invoke(Request $request, Loadout $loadout, ArtifactGenerator $generator, LoadoutAccess $access, LoadoutOverview $overview): Response
     {
         $user = $request->user();
         $viewer = $user instanceof User ? $user : null;
@@ -46,8 +47,10 @@ class LoadoutShowController extends Controller
                 'id' => $package->id,
                 'display_name' => $package->display_name,
                 'composer_name' => $package->composer_name,
+                'source_url' => $package->source_url,
                 'is_custom' => $package->is_custom,
             ])->values(),
+            'overview' => $overview->for($loadout),
             'artifacts' => $generator->preview($loadout),
         ]);
     }

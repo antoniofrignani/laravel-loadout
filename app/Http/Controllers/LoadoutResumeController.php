@@ -16,9 +16,20 @@ class LoadoutResumeController extends Controller
         $user = $request->user();
 
         abort_unless($user instanceof User && $access->canEdit($user, $loadout), 404);
+        $builder->ensureEditable($loadout);
 
         $builder->useDraft($request->session(), $loadout);
 
-        return to_route('builder.review')->with('status', 'loadout-resumed');
+        return to_route($this->resumeRoute($loadout))->with('status', 'loadout-resumed');
+    }
+
+    private function resumeRoute(Loadout $loadout): string
+    {
+        return match ($loadout->current_step) {
+            1 => 'builder.project',
+            2 => 'builder.starter',
+            3 => 'builder.runtime',
+            default => 'builder.packages',
+        };
     }
 }

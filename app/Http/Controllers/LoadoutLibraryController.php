@@ -29,6 +29,7 @@ class LoadoutLibraryController extends Controller
             ->get()
             ->map(function (Loadout $loadout) use ($access, $user): array {
                 $role = $access->roleFor($user, $loadout);
+                $isLocked = $loadout->isLocked();
 
                 return [
                     'id' => $loadout->id,
@@ -41,8 +42,10 @@ class LoadoutLibraryController extends Controller
                     'star_count' => $loadout->star_count,
                     'clone_count' => $loadout->clone_count,
                     'source_loadout_id' => $loadout->source_loadout_id,
+                    'is_locked' => $isLocked,
                     'access_role' => $role,
                     'can_edit' => $access->canEdit($user, $loadout),
+                    'can_resume' => $access->canEdit($user, $loadout) && ! $isLocked,
                     'can_manage_collaborators' => $access->canManageCollaborators($user, $loadout),
                     'updated_at' => $loadout->updated_at?->toFormattedDateString(),
                     'published_at' => $loadout->published_at?->toFormattedDateString(),

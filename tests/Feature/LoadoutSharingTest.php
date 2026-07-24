@@ -24,20 +24,117 @@ class LoadoutSharingTest extends TestCase
 
         $this
             ->from(route('builder.review'))
-            ->post(route('builder.publish'))
+            ->post(route('builder.publish'), ['visibility' => 'unlisted'])
             ->assertRedirect(route('builder.review'));
 
         $loadout = Loadout::query()->firstOrFail();
 
         $this->assertSame(LoadoutVisibility::Unlisted, $loadout->visibility);
         $this->assertNotNull($loadout->published_at);
+        $this->assertTrue($loadout->isLocked());
 
         $this->get(route('builder.review'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('loadout.is_shareable', true)
+                ->where('loadout.is_locked', true)
+                ->where('loadout.visibility', 'unlisted')
                 ->where('loadout.share_url', route('loadouts.show', $loadout)),
             );
+    }
+
+    public function test_current_draft_loadout_can_be_published_to_discover(): void
+    {
+        $this->withoutVite();
+
+        $this->get(route('builder.review'))->assertOk();
+
+        $this
+            ->from(route('builder.review'))
+            ->post(route('builder.publish'), ['visibility' => 'public'])
+            ->assertRedirect(route('builder.review'));
+
+        $loadout = Loadout::query()->firstOrFail();
+
+        $this->assertSame(LoadoutVisibility::Public, $loadout->visibility);
+        $this->assertNotNull($loadout->published_at);
+        $this->assertTrue($loadout->isLocked());
+
+        $this->get(route('discover'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('loadouts', 1)
+                ->where('loadouts.0.id', $loadout->id),
+            );
+    }
+
+    public function test_publish_visibility_must_be_unlisted_or_public(): void
+    {
+        $this->get(route('builder.review'))->assertOk();
+
+        $this->post(route('builder.publish'), ['visibility' => 'private'])
+            ->assertSessionHasErrors('visibility');
+
+        $this->assertSame(LoadoutVisibility::Private, Loadout::query()->sole()->visibility);
+    }
+
+    public function test_published_loadout_cannot_be_changed_through_builder_endpoints(): void
+    {
+        $this->get(route('builder.review'))->assertOk();
+
+        $loadout = Loadout::query()->firstOrFail();
+        $package = Package::factory()->create();
+        $selection = LoadoutPackage::factory()->for($loadout)->for($package)->create();
+
+        $this->post(route('builder.publish'), ['visibility' => 'unlisted'])->assertRedirect(route('builder.review'));
+
+        $this->post(route('builder.publish'), ['visibility' => 'public'])->assertForbidden();
+
+        $this->put(route('builder.project.update'), [
+            'project_name' => 'Changed after sharing',
+            'app_name' => 'Changed App',
+            'php_version' => '8.5',
+            'laravel_version' => '13.x',
+            'package_manager' => 'yarn',
+        ])->assertForbidden();
+
+        $this->put(route('builder.starter.update'), [
+            'frontend_stack' => 'vue-inertia',
+            'authentication' => 'none',
+            'teams' => false,
+            'dark_mode' => 'enabled',
+        ])->assertForbidden();
+
+        $this->put(route('builder.runtime.update'), [
+            'database' => 'pgsql',
+            'cache' => 'redis',
+            'queue' => 'redis',
+            'mail' => 'log',
+            'search' => 'meilisearch',
+            'local_runtime' => 'sail',
+        ])->assertForbidden();
+
+        $this->post(route('builder.packages.store'), [
+            'package_id' => $package->id,
+        ])->assertForbidden();
+
+        $this->post(route('builder.custom-packages.store'), [
+            'package_url' => 'spatie/laravel-permission',
+        ])->assertForbidden();
+
+        $this->patch(route('builder.packages.update', $selection), [
+            'install_as_dev' => true,
+            'notes' => 'Changed after sharing',
+        ])->assertForbidden();
+
+        $this->delete(route('builder.packages.destroy', $selection))->assertForbidden();
+
+        $loadout->refresh();
+        $selection->refresh();
+
+        $this->assertSame('Untitled Loadout', $loadout->title);
+        $this->assertSame(LoadoutVisibility::Unlisted, $loadout->visibility);
+        $this->assertNull($selection->notes);
     }
 
     public function test_unlisted_loadout_share_page_is_publicly_visible(): void
@@ -53,10 +150,37 @@ class LoadoutSharingTest extends TestCase
             'slug' => 'agency-starter',
             'visibility' => LoadoutVisibility::Unlisted,
             'published_at' => now(),
+            'builder_state' => [
+                'project' => [
+                    'laravel_version' => '13.x',
+                    'php_version' => '8.5',
+                    'package_manager' => 'pnpm',
+                ],
+                'starter' => [
+                    'frontend_stack' => 'react-inertia',
+                    'authentication' => 'laravel-auth',
+                    'teams' => true,
+                    'dark_mode' => 'system',
+                    'api_auth' => 'sanctum',
+                    'broadcasting' => 'reverb',
+                    'search' => 'scout',
+                    'queue_monitoring' => 'horizon',
+                    'observability' => 'pulse',
+                ],
+                'runtime' => [
+                    'local_runtime' => 'sail',
+                    'database' => 'pgsql',
+                    'cache' => 'redis',
+                    'queue' => 'redis',
+                    'mail' => 'mailpit',
+                    'search' => 'meilisearch',
+                ],
+            ],
         ]);
         LoadoutPackage::factory()->for($loadout)->for($package)->create([
             'display_name' => 'Laravel Permission',
             'composer_name' => 'spatie/laravel-permission',
+            'source_url' => 'https://github.com/spatie/laravel-permission',
         ]);
 
         $this->get(route('loadouts.show', $loadout))
@@ -67,7 +191,15 @@ class LoadoutSharingTest extends TestCase
                 ->where('loadout.share_url', route('loadouts.show', $loadout))
                 ->has('packages', 1)
                 ->where('packages.0.composer_name', 'spatie/laravel-permission')
-                ->has('artifacts', 5),
+                ->where('packages.0.source_url', 'https://github.com/spatie/laravel-permission')
+                ->has('overview', 4)
+                ->where('overview.0.title', 'Core')
+                ->where('overview.0.items.0.value', '13.x')
+                ->where('overview.1.items.0.value', 'React + Inertia')
+                ->where('overview.2.items.1.value', 'PostgreSQL')
+                ->where('overview.3.items.1.value', 'Laravel Reverb')
+                ->has('artifacts', 6)
+                ->where('artifacts.5.name', 'resources/js/echo.ts'),
             );
     }
 

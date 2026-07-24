@@ -1,6 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
-import { Boxes, GitFork, PackageCheck, Sparkles, Star, Zap } from 'lucide-react';
+import {
+    Boxes,
+    GitFork,
+    PackageCheck,
+    Sparkles,
+    Star,
+    Zap,
+} from 'lucide-react';
 
+import NewLoadoutController from '@/actions/App/Http/Controllers/Builder/NewLoadoutController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +19,6 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { discover } from '@/routes';
-import { project } from '@/routes/builder';
 import { show as showLoadout } from '@/routes/loadouts';
 import { show as showCollection } from '@/routes/package-collections';
 
@@ -42,24 +49,26 @@ type PublicCollection = {
     items_count: number;
 };
 
-type ActivityItem = {
-    type: 'loadout';
-    title: string;
-    slug: string;
-    public_id: string;
-    description: string | null;
-    occurred_at: string | null;
-    metric_label: string;
-    metric_value: number;
-} | {
-    type: 'collection';
-    title: string;
-    slug: string;
-    description: string | null;
-    occurred_at: string | null;
-    metric_label: string;
-    metric_value: number;
-};
+type ActivityItem =
+    | {
+          type: 'loadout';
+          title: string;
+          slug: string;
+          public_id: string;
+          description: string | null;
+          occurred_at: string | null;
+          metric_label: string;
+          metric_value: number;
+      }
+    | {
+          type: 'collection';
+          title: string;
+          slug: string;
+          description: string | null;
+          occurred_at: string | null;
+          metric_label: string;
+          metric_value: number;
+      };
 
 type Props = {
     profile: Profile;
@@ -119,7 +128,7 @@ export default function ProfileShow({
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline">
-                                        <Link href={project.url()}>
+                                        <Link href={NewLoadoutController()}>
                                             <Sparkles className="size-4" />
                                             Build your own
                                         </Link>
@@ -156,7 +165,10 @@ export default function ProfileShow({
                         <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
                             <Card className="rounded-2xl bg-muted/40">
                                 <CardHeader>
-                                    <Badge variant="secondary" className="w-fit">
+                                    <Badge
+                                        variant="secondary"
+                                        className="w-fit"
+                                    >
                                         Recent activity
                                     </Badge>
                                     <CardTitle className="text-3xl">
@@ -170,7 +182,10 @@ export default function ProfileShow({
                             </Card>
                             <div className="grid gap-3">
                                 {activity.map((item) => (
-                                    <ActivityCard key={`${item.type}-${item.slug}`} item={item} />
+                                    <ActivityCard
+                                        key={`${item.type}-${item.slug}`}
+                                        item={item}
+                                    />
                                 ))}
                             </div>
                         </section>
@@ -281,8 +296,8 @@ export default function ProfileShow({
                             <CardHeader>
                                 <CardTitle>No public loadouts yet</CardTitle>
                                 <CardDescription>
-                                    This curator has not shared a public
-                                    loadout yet.
+                                    This curator has not shared a public loadout
+                                    yet.
                                 </CardDescription>
                             </CardHeader>
                         </Card>

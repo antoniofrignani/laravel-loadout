@@ -1,5 +1,12 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Copy, Download, PackageCheck, Star } from 'lucide-react';
+import {
+    Blocks,
+    Copy,
+    Download,
+    ExternalLink,
+    Server,
+    Star,
+} from 'lucide-react';
 
 import LoadoutCloneController from '@/actions/App/Http/Controllers/LoadoutCloneController';
 import { ArtifactBrowser } from '@/components/artifact-browser';
@@ -13,9 +20,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { home, login } from '@/routes';
-import {
-    download as downloadLoadout,
-} from '@/routes/loadouts';
+import { download as downloadLoadout } from '@/routes/loadouts';
 import {
     destroy as unstarLoadout,
     store as starLoadout,
@@ -42,6 +47,7 @@ type Package = {
     id: number;
     display_name: string;
     composer_name: string | null;
+    source_url: string | null;
     is_custom: boolean;
 };
 
@@ -51,13 +57,24 @@ type Artifact = {
     content: string;
 };
 
+type OverviewSection = {
+    title: string;
+    items: { label: string; value: string }[];
+};
+
 type Props = {
     loadout: Loadout;
     packages: Package[];
+    overview: OverviewSection[];
     artifacts: Artifact[];
 };
 
-export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
+export default function LoadoutShow({
+    loadout,
+    packages,
+    overview,
+    artifacts,
+}: Props) {
     return (
         <>
             <Head title={loadout.title} />
@@ -133,7 +150,11 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                 </Button>
                             )}
                             {loadout.can_clone && (
-                                <Form {...LoadoutCloneController.form(loadout.public_id)}>
+                                <Form
+                                    {...LoadoutCloneController.form(
+                                        loadout.public_id,
+                                    )}
+                                >
                                     {({ processing }) => (
                                         <Button
                                             type="submit"
@@ -141,14 +162,20 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                             variant="default"
                                         >
                                             <Copy className="size-4" />
-                                            {processing ? 'Cloning...' : 'Clone loadout'}
+                                            {processing
+                                                ? 'Cloning...'
+                                                : 'Clone loadout'}
                                         </Button>
                                     )}
                                 </Form>
                             )}
                             {loadout.can_download && (
                                 <Button asChild>
-                                    <a href={downloadLoadout.url({ loadout: loadout.public_id })}>
+                                    <a
+                                        href={downloadLoadout.url({
+                                            loadout: loadout.public_id,
+                                        })}
+                                    >
                                         <Download className="size-4" />
                                         Download zip
                                     </a>
@@ -160,15 +187,54 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                         </div>
                     </header>
 
+                    <section aria-label="Loadout overview">
+                        <div className="mb-3 flex items-center gap-2">
+                            <Blocks className="size-4 text-muted-foreground" />
+                            <h2 className="text-sm font-medium">
+                                Stack overview
+                            </h2>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            {overview.map((section) => (
+                                <Card
+                                    key={section.title}
+                                    className="rounded-lg"
+                                >
+                                    <CardHeader className="px-4 py-3">
+                                        <CardTitle className="text-sm">
+                                            {section.title}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="grid gap-2 px-4 pb-4 text-sm">
+                                        {section.items.map((item) => (
+                                            <div
+                                                key={item.label}
+                                                className="flex items-baseline justify-between gap-3"
+                                            >
+                                                <span className="shrink-0 text-xs text-muted-foreground">
+                                                    {item.label}
+                                                </span>
+                                                <span className="min-w-0 text-right font-medium">
+                                                    {item.value}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
                     <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
                         <Card className="h-fit rounded-lg">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <PackageCheck className="size-5" />
-                                    Packages
+                                    <Server className="size-5" />
+                                    Included packages
                                 </CardTitle>
                                 <CardDescription>
-                                    The dependencies this stack expects from day one.
+                                    Curated and custom dependencies selected for
+                                    this stack.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="max-h-[520px] space-y-2 overflow-y-auto pr-2">
@@ -178,9 +244,23 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                             key={pkg.id}
                                             className="rounded-md bg-muted p-3 text-sm"
                                         >
-                                            <div className="truncate font-medium">
-                                                {pkg.display_name}
-                                            </div>
+                                            {pkg.source_url ? (
+                                                <a
+                                                    className="inline-flex max-w-full items-center gap-1 truncate font-medium hover:underline"
+                                                    href={pkg.source_url}
+                                                    rel="noreferrer"
+                                                    target="_blank"
+                                                >
+                                                    <span className="truncate">
+                                                        {pkg.display_name}
+                                                    </span>
+                                                    <ExternalLink className="size-3 shrink-0" />
+                                                </a>
+                                            ) : (
+                                                <div className="truncate font-medium">
+                                                    {pkg.display_name}
+                                                </div>
+                                            )}
                                             <div className="truncate font-mono text-xs text-muted-foreground">
                                                 {pkg.composer_name}
                                             </div>
@@ -196,7 +276,8 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                     ))
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        This loadout keeps dependencies to the framework defaults.
+                                        This loadout keeps dependencies to the
+                                        framework defaults.
                                     </p>
                                 )}
                             </CardContent>

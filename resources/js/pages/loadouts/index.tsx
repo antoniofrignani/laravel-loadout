@@ -1,6 +1,14 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Boxes, GitFork, PackageCheck, Play, Sparkles, Star } from 'lucide-react';
+import {
+    Boxes,
+    GitFork,
+    PackageCheck,
+    Play,
+    Sparkles,
+    Star,
+} from 'lucide-react';
 
+import NewLoadoutController from '@/actions/App/Http/Controllers/Builder/NewLoadoutController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +18,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { project } from '@/routes/builder';
 import { index as loadoutsIndex, resume, show } from '@/routes/loadouts';
 import { index as collaboratorsIndex } from '@/routes/loadouts/collaborators';
 
@@ -25,8 +32,10 @@ type Loadout = {
     star_count: number;
     clone_count: number;
     source_loadout_id: number | null;
+    is_locked: boolean;
     access_role: 'owner' | 'editor' | 'viewer' | null;
     can_edit: boolean;
+    can_resume: boolean;
     can_manage_collaborators: boolean;
     updated_at: string | null;
     published_at: string | null;
@@ -62,7 +71,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
                             </p>
                             <div className="mt-6">
                                 <Button asChild>
-                                    <Link href={project.url()}>
+                                    <Link href={NewLoadoutController()}>
                                         <Sparkles className="size-4" />
                                         Start a new loadout
                                     </Link>
@@ -111,8 +120,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                             </Badge>
                                         )}
                                         {loadout.access_role &&
-                                            loadout.access_role !==
-                                                'owner' && (
+                                            loadout.access_role !== 'owner' && (
                                                 <Badge variant="outline">
                                                     {loadout.access_role}
                                                 </Badge>
@@ -158,8 +166,12 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
-                                        {loadout.can_edit ? (
-                                            <Form {...resume.form(loadout.public_id)}>
+                                        {loadout.can_resume ? (
+                                            <Form
+                                                {...resume.form(
+                                                    loadout.public_id,
+                                                )}
+                                            >
                                                 {({ processing }) => (
                                                     <Button
                                                         type="submit"
@@ -173,20 +185,28 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                                 )}
                                             </Form>
                                         ) : (
-                                            <Button disabled variant="secondary">
+                                            <Button
+                                                disabled
+                                                variant="secondary"
+                                            >
                                                 View access
                                             </Button>
                                         )}
                                         {(loadout.visibility !== 'private' ||
-                                            !loadout.can_edit) && (
+                                            !loadout.can_edit ||
+                                            loadout.is_locked) && (
                                             <Button asChild variant="outline">
                                                 <Link
-                                                    href={show.url(loadout.public_id)}
+                                                    href={show.url(
+                                                        loadout.public_id,
+                                                    )}
                                                 >
-                                                    {loadout.visibility ===
-                                                    'private'
-                                                        ? 'View details'
-                                                        : 'View share page'}
+                                                    {loadout.is_locked
+                                                        ? 'View published stack'
+                                                        : loadout.visibility ===
+                                                            'private'
+                                                          ? 'View details'
+                                                          : 'View share page'}
                                                 </Link>
                                             </Button>
                                         )}
@@ -217,7 +237,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
                         </CardHeader>
                         <CardContent>
                             <Button asChild>
-                                <Link href={project.url()}>
+                                <Link href={NewLoadoutController()}>
                                     <Sparkles className="size-4" />
                                     Build your first loadout
                                 </Link>

@@ -53,6 +53,8 @@ class LoadoutLibraryTest extends TestCase
                 ->where('loadouts.0.packages_count', 2)
                 ->where('loadouts.0.access_role', 'owner')
                 ->where('loadouts.0.can_edit', true)
+                ->where('loadouts.0.is_locked', true)
+                ->where('loadouts.0.can_resume', false)
                 ->where('loadouts.0.can_manage_collaborators', true)
                 ->where('loadouts.1.id', $olderLoadout->id),
             );
@@ -116,11 +118,12 @@ class LoadoutLibraryTest extends TestCase
             'title' => 'Agency Stack',
             'slug' => 'agency-stack',
             'visibility' => LoadoutVisibility::Private,
+            'current_step' => 1,
         ]);
 
         $this->actingAs($user)
             ->post(route('loadouts.resume', $loadout))
-            ->assertRedirect(route('builder.review'));
+            ->assertRedirect(route('builder.project'));
 
         $this->actingAs($user)
             ->get(route('builder.review'))
@@ -129,6 +132,18 @@ class LoadoutLibraryTest extends TestCase
                 ->where('loadout.id', $loadout->id)
                 ->where('loadout.title', 'Agency Stack'),
             );
+    }
+
+    public function test_user_resumes_a_partially_configured_loadout_at_its_saved_step(): void
+    {
+        $user = User::factory()->create();
+        $loadout = Loadout::factory()->for($user)->create([
+            'current_step' => 3,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('loadouts.resume', $loadout))
+            ->assertRedirect(route('builder.runtime'));
     }
 
     public function test_user_cannot_resume_another_users_loadout(): void
@@ -142,6 +157,19 @@ class LoadoutLibraryTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_locked_loadout_cannot_be_resumed(): void
+    {
+        $user = User::factory()->create();
+        $loadout = Loadout::factory()->for($user)->create([
+            'visibility' => LoadoutVisibility::Unlisted,
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('loadouts.resume', $loadout))
+            ->assertForbidden();
+    }
+
     public function test_editor_collaborator_can_resume_and_edit_loadout(): void
     {
         $this->withoutVite();
@@ -151,6 +179,7 @@ class LoadoutLibraryTest extends TestCase
         $loadout = Loadout::factory()->for($owner)->create([
             'title' => 'Shared Stack',
             'slug' => 'shared-stack',
+            'current_step' => 1,
         ]);
         LoadoutCollaborator::query()->create([
             'loadout_id' => $loadout->id,
@@ -160,7 +189,7 @@ class LoadoutLibraryTest extends TestCase
 
         $this->actingAs($editor)
             ->post(route('loadouts.resume', $loadout))
-            ->assertRedirect(route('builder.review'));
+            ->assertRedirect(route('builder.project'));
 
         $this->actingAs($editor)
             ->put(route('builder.project.update'), [
