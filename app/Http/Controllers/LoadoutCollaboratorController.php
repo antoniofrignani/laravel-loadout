@@ -47,8 +47,6 @@ class LoadoutCollaboratorController extends Controller
         $data = $request->collaboratorData();
         $collaborator = User::query()->where('email', $data['email'])->firstOrFail();
 
-        abort_if($collaborator->id === $loadout->user_id, 422, 'The owner is already responsible for this loadout.');
-
         LoadoutCollaborator::query()->updateOrCreate(
             [
                 'loadout_id' => $loadout->id,

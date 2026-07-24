@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\LoadoutVisibility;
+use App\Models\Loadout;
 use App\Models\Package;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -61,12 +63,43 @@ class BuilderReviewPageTest extends TestCase
                 ->where('artifacts.0.content', fn (string $content): bool => str_contains($content, '"laravel/sail": "^1.48"'))
                 ->where('artifacts.4.content', function (string $content): bool {
                     return str_contains($content, 'laravelsail/php84-composer:latest')
-                        && str_contains($content, './vendor/bin/sail composer install')
-                        && str_contains($content, './vendor/bin/sail yarn install')
-                        && str_contains($content, './vendor/bin/sail artisan migrate')
-                        && ! str_contains($content, "\ncomposer install\n")
-                        && ! str_contains($content, "\nyarn install\n");
+                    && str_contains($content, './vendor/bin/sail yarn install')
+                    && str_contains($content, './vendor/bin/sail artisan migrate')
+                    && ! str_contains($content, './vendor/bin/sail composer install')
+                    && ! str_contains($content, "\ncomposer install\n")
+                    && ! str_contains($content, "\nyarn install\n");
                 }),
+            );
+    }
+
+    public function test_readme_includes_the_public_url_only_after_the_loadout_is_published(): void
+    {
+        $this->withoutVite();
+
+        $this->get(route('builder.packages'))->assertOk();
+
+        $this->get(route('builder.review'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains(
+                    $content,
+                    'Shareable template URL: Publish this loadout in Laravel Loadout to generate a public URL.',
+                )),
+            );
+
+        $loadout = Loadout::query()->firstOrFail();
+        $loadout->update([
+            'visibility' => LoadoutVisibility::Unlisted,
+            'published_at' => now(),
+        ]);
+
+        $this->get(route('builder.review'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains(
+                    $content,
+                    'Shareable template URL: '.route('loadouts.show', $loadout),
+                )),
             );
     }
 

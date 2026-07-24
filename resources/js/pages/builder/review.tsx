@@ -3,13 +3,12 @@ import {
     ArrowLeft,
     Download,
     ExternalLink,
-    FileText,
     PackageCheck,
     Share2,
 } from 'lucide-react';
 
 import PublishController from '@/actions/App/Http/Controllers/Builder/PublishController';
-import { ArtifactContent } from '@/components/artifact-content';
+import { ArtifactBrowser } from '@/components/artifact-browser';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -56,11 +55,11 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                             <span>Review and generate</span>
                         </div>
                         <h1 className="text-3xl font-semibold tracking-normal">
-                            Generated starter preview
+                            Review your loadout
                         </h1>
                         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-                            Review the essential files that will be included in
-                            the downloadable Laravel Loadout template for{' '}
+                            Inspect the files before you hand this stack to a
+                            project or a teammate. They are built from{' '}
                             <span className="font-medium text-foreground">
                                 {loadout.title}
                             </span>
@@ -88,11 +87,11 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <PackageCheck className="size-5" />
-                                Template summary
+                                Loadout summary
                             </CardTitle>
                             <CardDescription>
-                                This preview is generated from the current draft
-                                loadout session.
+                                The configuration below is ready to download or
+                                publish as an unlisted link.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
@@ -104,14 +103,14 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                             </div>
                             <div>
                                 <div className="text-muted-foreground">
-                                    Generated files
+                                    Files in the archive
                                 </div>
                                 <div>{artifacts.length}</div>
                             </div>
                             <div className="rounded-md bg-muted p-3 text-muted-foreground">
-                                Download contains only generated essential files.
-                                Dependencies are installed by the user after
-                                extraction.
+                                The archive contains configuration and setup
+                                files only. Install Composer and Yarn
+                                dependencies after extracting it.
                             </div>
                             {loadout.is_shareable && loadout.share_url ? (
                                 <div className="rounded-md border p-3">
@@ -144,7 +143,7 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                                             disabled={processing}
                                         >
                                             <Share2 className="size-4" />
-                                            Publish share link
+                                            Create share link
                                         </Button>
                                     )}
                                 </Form>
@@ -152,24 +151,7 @@ export default function BuilderReview({ loadout, artifacts }: Props) {
                         </CardContent>
                     </Card>
 
-                    <div className="grid gap-4">
-                        {artifacts.map((artifact) => (
-                            <Card key={artifact.name} className="rounded-lg">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <FileText className="size-5 text-muted-foreground" />
-                                        {artifact.name}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {artifact.language}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ArtifactContent artifact={artifact} />
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    <ArtifactBrowser artifacts={artifacts} />
                 </section>
             </div>
         </>

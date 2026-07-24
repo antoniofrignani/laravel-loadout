@@ -53,12 +53,11 @@ export default function LoadoutIndex({ loadouts }: Props) {
                         <div>
                             <Badge variant="secondary">Account library</Badge>
                             <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight md:text-4xl">
-                                Save, resume, and refine your Laravel starter stacks.
+                                Your Laravel starting points, all in one place.
                             </h1>
                             <p className="mt-3 max-w-2xl text-muted-foreground">
-                                Your cloned and owned loadouts live here. Resume
-                                any stack to update choices, package notes, and
-                                generated artifacts.
+                                Resume a draft, revisit a shared stack, or keep
+                                tuning the packages and services behind one.
                             </p>
                             <div className="mt-6">
                                 <Button asChild>
@@ -123,7 +122,7 @@ export default function LoadoutIndex({ loadouts }: Props) {
                                     </CardTitle>
                                     <CardDescription>
                                         {loadout.description ??
-                                            'No description yet.'}
+                                            'No project notes yet.'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-5">
@@ -211,8 +210,8 @@ export default function LoadoutIndex({ loadouts }: Props) {
                         <CardHeader>
                             <CardTitle>No loadouts yet</CardTitle>
                             <CardDescription>
-                                Start a builder draft or clone a shared loadout
-                                to populate your account library.
+                                Build a new stack or clone one from the
+                                community to start your library.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

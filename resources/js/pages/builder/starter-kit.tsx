@@ -48,11 +48,11 @@ export default function StarterKit({ values }: Props) {
                     </div>
                     <div className="max-w-3xl">
                         <h1 className="text-3xl font-semibold tracking-normal">
-                            Choose the application shell
+                            Choose the application baseline
                         </h1>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            Pick the frontend stack, authentication baseline,
-                            and UI assumptions that shape the generated starter.
+                            Pick the conventions this project should inherit
+                            before packages enter the picture.
                         </p>
                     </div>
                 </header>
@@ -60,10 +60,10 @@ export default function StarterKit({ values }: Props) {
                 <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
                     <Card className="rounded-lg">
                         <CardHeader>
-                            <CardTitle>Starter configuration</CardTitle>
+                            <CardTitle>Application conventions</CardTitle>
                             <CardDescription>
-                                React/Inertia with Laravel authentication is the
-                                default because it matches this app scaffold.
+                                Start with the shape you would normally reach
+                                for, then make the exceptions explicit.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -208,18 +208,19 @@ export default function StarterKit({ values }: Props) {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Layers className="size-5" />
-                                Generated impact
+                                What this sets
                             </CardTitle>
                             <CardDescription>
-                                These choices feed the previewed files.
+                                These choices set the conventions the project
+                                starts with.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm text-muted-foreground">
                             <div className="rounded-md bg-muted p-3">
                                 <ShieldCheck className="mb-2 size-4" />
-                                Authentication and frontend choices are
-                                summarized in README and determine frontend
-                                package assumptions.
+                                The README records these choices, and the
+                                frontend selection informs the generated
+                                package manifest.
                             </div>
                         </CardContent>
                     </Card>

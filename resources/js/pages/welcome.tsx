@@ -16,21 +16,21 @@ import { index as loadoutsIndex } from '@/routes/loadouts';
 
 const features = [
     {
-        title: 'Build step by step',
+        title: 'Set the baseline',
         description:
-            'Choose Laravel version, runtime, starter kit, services, and package assumptions in one guided flow.',
+            'Choose the Laravel, runtime, and frontend conventions your next project should start with.',
         icon: Boxes,
     },
     {
-        title: 'Curate dependencies',
+        title: 'Choose dependencies',
         description:
-            'Pick from curated packages, add project-only custom packages, and keep notes for install-time decisions.',
+            'Browse useful packages, keep project-specific additions private, and leave the setup notes where they belong.',
         icon: PackagePlus,
     },
     {
-        title: 'Share or download',
+        title: 'Hand it off',
         description:
-            'Export a lean zip with generated files or publish a shareable loadout URL for teammates.',
+            'Download the configuration files or share a link your team can clone and adapt.',
         icon: Share2,
     },
 ];
@@ -78,24 +78,23 @@ export default function Welcome() {
                     <section className="grid flex-1 items-center gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-20">
                         <div>
                             <Badge className="rounded-full" variant="secondary">
-                                Free Laravel starter-stack builder
+                                A better starting point for Laravel
                             </Badge>
                             <h1 className="mt-6 max-w-4xl text-5xl font-semibold tracking-tight md:text-7xl">
                                 Build, save and share your Laravel starter
                                 stack.
                             </h1>
                             <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                                Laravel Loadout turns project scaffolding
-                                choices into generated files, install notes,
-                                and shareable templates. Start from the
-                                defaults, then add the packages your projects
-                                actually need.
+                                Make the decisions once. Laravel Loadout turns
+                                them into a reusable project blueprint: stack
+                                choices, dependencies, local services, and the
+                                files that tie them together.
                             </p>
                             <div className="mt-8 flex flex-wrap gap-3">
                                 <Button asChild size="lg">
                                     <Link href={builderProject.url()}>
                                         <Sparkles className="size-4" />
-                                        Start builder
+                                        Build a loadout
                                     </Link>
                                 </Button>
                                 <Button asChild size="lg" variant="outline">
@@ -108,9 +107,10 @@ export default function Welcome() {
 
                         <Card className="rounded-3xl border-black/10 bg-white/75 shadow-2xl shadow-black/10 backdrop-blur dark:bg-slate-950/70">
                             <CardHeader>
-                                <CardTitle>Generated output</CardTitle>
+                                <CardTitle>What you take with you</CardTitle>
                                 <CardDescription>
-                                    Lean template files, no dependency folders.
+                                    Project configuration, setup notes, and no
+                                    dependency folders.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3 text-sm">
@@ -128,7 +128,7 @@ export default function Welcome() {
                                         <span className="font-mono">
                                             {file}
                                         </span>
-                                        <Badge variant="outline">preview</Badge>
+                                        <Badge variant="outline">included</Badge>
                                     </div>
                                 ))}
                             </CardContent>

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\LoadoutVisibility;
 use App\Models\Loadout;
 use App\Models\LoadoutPackage;
 use Illuminate\Support\Collection;
@@ -303,7 +304,7 @@ class ArtifactGenerator
             '',
             $loadout->description ?: 'Generated with Laravel Loadout.',
             '',
-            'Shareable template URL: '.route('builder.review'),
+            'Shareable template URL: '.$this->shareableTemplateUrl($loadout),
             '',
             '## Stack',
             '',
@@ -353,11 +354,19 @@ class ArtifactGenerator
             '    laravelsail/php84-composer:latest \\',
             '    composer install --ignore-platform-reqs',
             './vendor/bin/sail up -d',
-            './vendor/bin/sail composer install',
             './vendor/bin/sail yarn install',
             './vendor/bin/sail artisan key:generate',
             './vendor/bin/sail artisan migrate',
         ];
+    }
+
+    private function shareableTemplateUrl(Loadout $loadout): string
+    {
+        if ($loadout->visibility === LoadoutVisibility::Private) {
+            return 'Publish this loadout in Laravel Loadout to generate a public URL.';
+        }
+
+        return route('loadouts.show', $loadout);
     }
 
     private function builderValue(Loadout $loadout, string $key, string $default): string

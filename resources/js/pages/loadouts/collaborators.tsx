@@ -70,9 +70,8 @@ export default function LoadoutCollaborators({
                         Manage access for {loadout.title}
                     </h1>
                     <p className="mt-3 max-w-2xl text-muted-foreground">
-                        Add registered Laravel Loadout users as viewers or
-                        editors. Editors will be able to modify shared loadout
-                        choices once edit permissions are wired into the builder.
+                        Give teammates a seat at this loadout. Viewers can
+                        inspect it; editors can keep its decisions moving.
                     </p>
                 </header>
 
@@ -81,8 +80,8 @@ export default function LoadoutCollaborators({
                         <CardHeader>
                             <CardTitle>Add collaborator</CardTitle>
                             <CardDescription>
-                                Enter the email address of an existing account.
-                                Re-adding a user updates their role.
+                                Enter an existing account email. Adding the
+                                same person again updates their role.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -154,7 +153,7 @@ export default function LoadoutCollaborators({
                         <CardHeader>
                             <CardTitle>Current collaborators</CardTitle>
                             <CardDescription>
-                                People with explicit access to this loadout.
+                                Everyone who has access beyond the public link.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -208,7 +207,7 @@ export default function LoadoutCollaborators({
                                 ))
                             ) : (
                                 <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-                                    No collaborators yet.
+                                    This loadout is still a one-person job.
                                 </div>
                             )}
                         </CardContent>

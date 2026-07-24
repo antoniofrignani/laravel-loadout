@@ -50,11 +50,11 @@ export default function Runtime({ values }: Props) {
                     </div>
                     <div className="max-w-3xl">
                         <h1 className="text-3xl font-semibold tracking-normal">
-                            Pick the local services
+                            Define the local environment
                         </h1>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            Runtime choices drive `.env.loadout`, `compose.yaml`,
-                            and setup notes.
+                            Choose the services you want available from the
+                            first `sail up`.
                         </p>
                     </div>
                 </header>
@@ -62,10 +62,10 @@ export default function Runtime({ values }: Props) {
                 <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
                     <Card className="rounded-lg">
                         <CardHeader>
-                            <CardTitle>Runtime configuration</CardTitle>
+                            <CardTitle>Local services</CardTitle>
                             <CardDescription>
-                                Sail is the first-class local runtime for the
-                                generated template.
+                                Keep the default lean. Add services only when
+                                the application will use them.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -115,7 +115,7 @@ export default function Runtime({ values }: Props) {
                                                 options={[
                                                     ['mailpit', 'Mailpit'],
                                                     ['log', 'Log'],
-                                                    ['smtp', 'SMTP placeholder'],
+                                                    ['smtp', 'Custom SMTP'],
                                                 ]}
                                             />
                                             <RuntimeSelect
@@ -164,11 +164,11 @@ export default function Runtime({ values }: Props) {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <ServerCog className="size-5" />
-                                Generated impact
+                                What gets wired up
                             </CardTitle>
                             <CardDescription>
-                                Service selections become local infrastructure
-                                defaults.
+                                These selections drive the generated compose
+                                file and environment values.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm text-muted-foreground">

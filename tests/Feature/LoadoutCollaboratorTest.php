@@ -118,11 +118,36 @@ class LoadoutCollaboratorTest extends TestCase
         $loadout = Loadout::factory()->for($owner)->create();
 
         $this->actingAs($owner)
+            ->from(route('loadouts.collaborators.index', $loadout))
             ->post(route('loadouts.collaborators.store', $loadout), [
                 'email' => $owner->email,
                 'role' => 'editor',
             ])
-            ->assertUnprocessable();
+            ->assertRedirect(route('loadouts.collaborators.index', $loadout))
+            ->assertSessionHasErrors([
+                'email' => 'You already own this loadout.',
+            ]);
+
+        $this->assertDatabaseEmpty('loadout_collaborators');
+    }
+
+    public function test_collaborator_must_have_a_laravel_loadout_account(): void
+    {
+        $owner = User::factory()->create();
+        $loadout = Loadout::factory()->for($owner)->create();
+
+        $this->actingAs($owner)
+            ->from(route('loadouts.collaborators.index', $loadout))
+            ->post(route('loadouts.collaborators.store', $loadout), [
+                'email' => 'teammate@example.com',
+                'role' => 'viewer',
+            ])
+            ->assertRedirect(route('loadouts.collaborators.index', $loadout))
+            ->assertSessionHasErrors([
+                'email' => 'No Laravel Loadout account was found for this email. Ask them to sign up first.',
+            ]);
+
+        $this->assertDatabaseEmpty('loadout_collaborators');
     }
 
     public function test_collaborator_role_must_be_supported(): void

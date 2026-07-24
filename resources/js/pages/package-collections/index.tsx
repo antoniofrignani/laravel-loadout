@@ -51,11 +51,11 @@ export default function PackageCollectionIndex({ collections }: Props) {
                         Package curation
                     </Badge>
                     <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight md:text-4xl">
-                        Curate reusable package shortlists.
+                        Keep your trusted packages together.
                     </h1>
                     <p className="mt-3 max-w-2xl text-muted-foreground">
-                        Group high-value Laravel packages by use case and share
-                        public collections from your curator profile.
+                        Build reusable shelves for product types, team
+                        conventions, or the integrations you reach for often.
                     </p>
                 </section>
 
@@ -64,8 +64,8 @@ export default function PackageCollectionIndex({ collections }: Props) {
                         <CardHeader>
                             <CardTitle>Create collection</CardTitle>
                             <CardDescription>
-                                Start with a title and visibility. Add packages
-                                from the collection detail page.
+                                Name the collection and set its visibility.
+                                Add the packages on the next screen.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -83,7 +83,7 @@ export default function PackageCollectionIndex({ collections }: Props) {
                                             <Input
                                                 id="title"
                                                 name="title"
-                                                placeholder="SaaS essentials"
+                                                placeholder="SaaS foundation"
                                             />
                                             {errors.title && (
                                                 <p className="text-sm text-destructive">
@@ -99,7 +99,7 @@ export default function PackageCollectionIndex({ collections }: Props) {
                                             <Textarea
                                                 id="description"
                                                 name="description"
-                                                placeholder="Packages I reach for when building subscription apps."
+                                                placeholder="The packages we use for subscription products."
                                             />
                                             {errors.description && (
                                                 <p className="text-sm text-destructive">
@@ -184,7 +184,7 @@ export default function PackageCollectionIndex({ collections }: Props) {
                                         </CardTitle>
                                         <CardDescription>
                                             {collection.description ??
-                                                'No description yet.'}
+                                                'No notes added yet.'}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-wrap items-center justify-between gap-3">
@@ -209,8 +209,8 @@ export default function PackageCollectionIndex({ collections }: Props) {
                             <CardHeader>
                                 <CardTitle>No collections yet</CardTitle>
                                 <CardDescription>
-                                    Create your first package shortlist to start
-                                    curating.
+                                    Save a group of packages you expect to reach
+                                    for again.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>

@@ -66,7 +66,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                             <div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Badge variant="secondary">
-                                        Public discovery
+                                        Community loadouts
                                     </Badge>
                                     <Link
                                         href={home()}
@@ -76,19 +76,18 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                     </Link>
                                 </div>
                                 <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">
-                                    Clone proven Laravel starter stacks.
+                                    Start from a stack someone has already thought through.
                                 </h1>
                                 <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-                                    Browse public loadouts from the community,
-                                    inspect their generated files, then clone
-                                    one into your builder session to fine-tune
-                                    it for your next project.
+                                    Explore public loadouts, inspect the files
+                                    and dependencies, then clone one to make it
+                                    your own.
                                 </p>
                                 <div className="mt-7 flex flex-wrap gap-3">
                                     <Button asChild>
                                         <Link href={project.url()}>
                                             <Sparkles className="size-4" />
-                                            Build from scratch
+                                            Start a fresh loadout
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline">
@@ -198,7 +197,7 @@ export default function DiscoverIndex({ loadouts, filters, stats }: Props) {
                                         </CardTitle>
                                         <CardDescription>
                                             {loadout.description ??
-                                                'A Laravel starter stack shared with the community.'}
+                                                'A Laravel starting point shared with the community.'}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="mt-auto space-y-5">

@@ -48,12 +48,11 @@ export default function ProjectBasics({ values }: Props) {
                     </div>
                     <div className="max-w-3xl">
                         <h1 className="text-3xl font-semibold tracking-normal">
-                            Name the starter stack
+                            Give this stack a name
                         </h1>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            These answers seed the generated README,
-                            `.env.loadout`, Composer metadata, and package
-                            manager assumptions.
+                            This is the identity carried into the README,
+                            Composer metadata, and `.env.loadout`.
                         </p>
                     </div>
                 </header>
@@ -61,10 +60,10 @@ export default function ProjectBasics({ values }: Props) {
                 <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
                     <Card className="rounded-lg">
                         <CardHeader>
-                            <CardTitle>Project details</CardTitle>
+                            <CardTitle>Project brief</CardTitle>
                             <CardDescription>
-                                Keep this generic enough to reuse across new
-                                Laravel apps.
+                                Write this for the person who will pick up the
+                                loadout later, including future you.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -84,7 +83,7 @@ export default function ProjectBasics({ values }: Props) {
                                                 defaultValue={
                                                     values.project_name
                                                 }
-                                                placeholder="Agency Starter"
+                                                placeholder="Agency App Baseline"
                                             />
                                             {errors.project_name && (
                                                 <p className="text-sm text-destructive">
@@ -101,7 +100,7 @@ export default function ProjectBasics({ values }: Props) {
                                                 id="app_name"
                                                 name="app_name"
                                                 defaultValue={values.app_name}
-                                                placeholder="Laravel Loadout App"
+                                                placeholder="Acme Portal"
                                             />
                                             {errors.app_name && (
                                                 <p className="text-sm text-destructive">
@@ -120,7 +119,7 @@ export default function ProjectBasics({ values }: Props) {
                                                 defaultValue={
                                                     values.description ?? ''
                                                 }
-                                                placeholder="A reusable Laravel starter for client projects."
+                                                placeholder="A solid Laravel baseline for client portals and internal tools."
                                             />
                                             {errors.description && (
                                                 <p className="text-sm text-destructive">

@@ -94,7 +94,7 @@ export default function ProfileShow({
                                 </h1>
                                 <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
                                     {profile.profile_bio ??
-                                        'Laravel starter stack curator.'}
+                                        'Sharing Laravel starting points and the packages behind them.'}
                                 </p>
                                 {profile.joined_at && (
                                     <p className="mt-3 text-sm text-muted-foreground">
@@ -150,11 +150,11 @@ export default function ProfileShow({
                                         Recent activity
                                     </Badge>
                                     <CardTitle className="text-3xl">
-                                        Latest public curation work
+                                        Latest additions
                                     </CardTitle>
                                     <CardDescription>
-                                        A quick timeline of newly published
-                                        loadouts and updated package collections.
+                                        Recently published loadouts and package
+                                        collections from this curator.
                                     </CardDescription>
                                 </CardHeader>
                             </Card>
@@ -185,7 +185,7 @@ export default function ProfileShow({
                                         </CardTitle>
                                         <CardDescription>
                                             {collection.description ??
-                                                'A curated Laravel package shortlist.'}
+                                                'A package shelf this curator keeps ready to reuse.'}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex items-center justify-between gap-3">
@@ -231,7 +231,7 @@ export default function ProfileShow({
                                         </CardTitle>
                                         <CardDescription>
                                             {loadout.description ??
-                                                'A Laravel starter stack shared with the community.'}
+                                                'A Laravel starting point shared with the community.'}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="mt-auto space-y-5">
@@ -271,8 +271,8 @@ export default function ProfileShow({
                             <CardHeader>
                                 <CardTitle>No public loadouts yet</CardTitle>
                                 <CardDescription>
-                                    This curator has not published any public
-                                    loadouts.
+                                    This curator has not shared a public
+                                    loadout yet.
                                 </CardDescription>
                             </CardHeader>
                         </Card>

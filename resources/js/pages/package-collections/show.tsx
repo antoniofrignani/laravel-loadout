@@ -120,7 +120,7 @@ export default function PackageCollectionShow({
                         </h1>
                         <p className="mt-4 max-w-2xl text-muted-foreground">
                             {collection.description ??
-                                'A curated package shortlist for Laravel projects.'}
+                                'A focused set of Laravel packages, kept together for reuse.'}
                         </p>
                         <Form
                             {...importCollection.form(collection.slug)}
@@ -143,8 +143,8 @@ export default function PackageCollectionShow({
                                 <CardHeader>
                                     <CardTitle>Add package</CardTitle>
                                     <CardDescription>
-                                        Add a curated catalog package to this
-                                        collection.
+                                        Add from the catalog, then explain why
+                                        the package earns a place here.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -160,7 +160,7 @@ export default function PackageCollectionShow({
                                                         name="package_id"
                                                     >
                                                         <SelectTrigger className="w-full">
-                                                            <SelectValue placeholder="Choose package" />
+                                                            <SelectValue placeholder="Choose a package" />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             {available_packages.map(
@@ -194,7 +194,7 @@ export default function PackageCollectionShow({
                                                 <div className="grid gap-2">
                                                     <Textarea
                                                         name="notes"
-                                                        placeholder="Why this package belongs here"
+                                                        placeholder="Why this belongs in the stack"
                                                     />
                                                     {errors.notes && (
                                                         <p className="text-sm text-destructive">

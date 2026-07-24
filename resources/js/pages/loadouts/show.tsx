@@ -1,8 +1,8 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Copy, Download, FileText, PackageCheck, Star } from 'lucide-react';
+import { Copy, Download, PackageCheck, Star } from 'lucide-react';
 
 import LoadoutCloneController from '@/actions/App/Http/Controllers/LoadoutCloneController';
-import { ArtifactContent } from '@/components/artifact-content';
+import { ArtifactBrowser } from '@/components/artifact-browser';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,7 +82,7 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                         </h1>
                         <p className="mt-4 max-w-2xl text-muted-foreground">
                             {loadout.description ??
-                                'A shared Laravel starter stack generated with Laravel Loadout.'}
+                                'A Laravel starting point shared by its creator.'}
                         </p>
                         <div className="mt-6 flex flex-wrap gap-3">
                             {loadout.can_star ? (
@@ -167,7 +167,7 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                     Packages
                                 </CardTitle>
                                 <CardDescription>
-                                    Selected dependencies in this loadout.
+                                    The dependencies this stack expects from day one.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="max-h-[520px] space-y-2 overflow-y-auto pr-2">
@@ -195,36 +195,16 @@ export default function LoadoutShow({ loadout, packages, artifacts }: Props) {
                                     ))
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        No packages selected.
+                                        This loadout keeps dependencies to the framework defaults.
                                     </p>
                                 )}
                             </CardContent>
                         </Card>
 
-                        <div className="grid gap-4">
-                            {artifacts.map((artifact) => (
-                                <Card
-                                    key={artifact.name}
-                                    className="rounded-lg"
-                                >
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg">
-                                            <FileText className="size-5 text-muted-foreground" />
-                                            {artifact.name}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            {artifact.language}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ArtifactContent
-                                            artifact={artifact}
-                                            maxHeightClassName="max-h-[420px]"
-                                        />
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                        <ArtifactBrowser
+                            artifacts={artifacts}
+                            maxHeightClassName="max-h-[520px]"
+                        />
                     </section>
                 </div>
             </main>

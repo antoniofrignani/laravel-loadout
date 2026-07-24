@@ -272,11 +272,12 @@ export default function BuilderPackages({
                     <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
                         <div className="max-w-3xl">
                             <h1 className="text-3xl font-semibold tracking-normal">
-                                Build your package loadout
+                                Choose the packages that earn a place
                             </h1>
                             <p className="mt-2 text-sm text-muted-foreground">
-                                Curated Laravel packages, install metadata, and
-                                loadout-only custom additions.
+                                Start with the catalog, see what each package
+                                brings along, and add one-off dependencies when
+                                you need them.
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -317,7 +318,7 @@ export default function BuilderPackages({
                                         onChange={(event) =>
                                             setSearch(event.target.value)
                                         }
-                                        placeholder="Search package or vendor/name"
+                                        placeholder="Search by name or vendor/package"
                                     />
                                 </label>
 
@@ -383,7 +384,7 @@ export default function BuilderPackages({
                                     onChange={(event) =>
                                         setService(event.target.value)
                                     }
-                                    placeholder="Service"
+                                    placeholder="Required service"
                                 />
 
                                 <div className="flex gap-2">
@@ -545,7 +546,7 @@ export default function BuilderPackages({
                                                 <RefreshCw className="size-3.5" />
                                                 <span className="truncate">
                                                     {catalogPackage.stats_refreshed_at ??
-                                                        'Pending'}
+                                                        'Not refreshed yet'}
                                                 </span>
                                             </div>
                                         </div>
