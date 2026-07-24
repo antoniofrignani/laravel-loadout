@@ -1,6 +1,7 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     Download,
+    ExternalLink,
     PackagePlus,
     Plus,
     RefreshCw,
@@ -103,6 +104,7 @@ type SelectedLoadoutPackage = {
     id: number;
     display_name: string;
     composer_name: string | null;
+    source_url: string | null;
     install_options: {
         dev_dependency?: boolean;
     } | null;
@@ -112,6 +114,7 @@ type SelectedLoadoutPackage = {
 type DraftLoadout = {
     id: number;
     title: string;
+    is_locked: boolean;
     selected_package_ids: number[];
     selected_packages: SelectedLoadoutPackage[];
     custom_packages: CustomLoadoutPackage[];
@@ -202,6 +205,7 @@ export default function BuilderPackages({
     const selectedPackageIds = loadout?.selected_package_ids ?? [];
     const selectedPackages = loadout?.selected_packages ?? [];
     const customPackages = loadout?.custom_packages ?? [];
+    const isLocked = loadout?.is_locked ?? false;
     const packageRecommendations = recommendations ?? [];
     const selectedCount = selectedPackages.length + customPackages.length;
     const devPackageCount = selectedPackages.filter(
@@ -255,6 +259,15 @@ export default function BuilderPackages({
                 preserveState: true,
                 replace: true,
             },
+        );
+    }
+
+    if (isLocked) {
+        return (
+            <LockedPackageStack
+                customPackages={customPackages}
+                selectedPackages={selectedPackages}
+            />
         );
     }
 
@@ -563,7 +576,10 @@ export default function BuilderPackages({
                                                     );
 
                                                 return (
-                                                    <>
+                                                    <fieldset
+                                                        className="contents"
+                                                        disabled={isLocked}
+                                                    >
                                                         <input
                                                             name="package_id"
                                                             type="hidden"
@@ -586,9 +602,11 @@ export default function BuilderPackages({
                                                             <Plus className="size-4" />
                                                             {selected
                                                                 ? 'Selected'
-                                                                : 'Select package'}
+                                                                : isLocked
+                                                                  ? 'Locked'
+                                                                  : 'Select package'}
                                                         </Button>
-                                                    </>
+                                                    </fieldset>
                                                 );
                                             }}
                                         </Form>
@@ -648,6 +666,13 @@ export default function BuilderPackages({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
+                                {isLocked && (
+                                    <div className="rounded-lg border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                                        This shared loadout is locked. Clone it
+                                        from its public page to change the
+                                        package stack.
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-4 gap-2">
                                     <div className="rounded-lg border bg-background p-2">
                                         <div className="text-lg font-semibold">
@@ -717,7 +742,10 @@ export default function BuilderPackages({
                                     {...storeCustomPackage.form()}
                                 >
                                     {({ errors, processing }) => (
-                                        <>
+                                        <fieldset
+                                            className="contents"
+                                            disabled={isLocked}
+                                        >
                                             <div className="text-sm font-medium">
                                                 Drop in a custom package
                                             </div>
@@ -740,14 +768,15 @@ export default function BuilderPackages({
                                                 className="w-full"
                                                 disabled={
                                                     processing ||
-                                                    !customPackageUrl
+                                                    !customPackageUrl ||
+                                                    isLocked
                                                 }
                                                 size="sm"
                                             >
                                                 <Plus className="size-4" />
                                                 Add custom package
                                             </Button>
-                                        </>
+                                        </fieldset>
                                     )}
                                 </Form>
 
@@ -787,7 +816,12 @@ export default function BuilderPackages({
                                                                 {({
                                                                     processing,
                                                                 }) => (
-                                                                    <>
+                                                                    <fieldset
+                                                                        className="contents"
+                                                                        disabled={
+                                                                            isLocked
+                                                                        }
+                                                                    >
                                                                         {recommendation.package_id ? (
                                                                             <input
                                                                                 name="package_id"
@@ -809,7 +843,8 @@ export default function BuilderPackages({
                                                                             className="h-7 px-2"
                                                                             disabled={
                                                                                 processing ||
-                                                                                recommendation.is_selected
+                                                                                recommendation.is_selected ||
+                                                                                isLocked
                                                                             }
                                                                             size="sm"
                                                                             variant={
@@ -822,7 +857,7 @@ export default function BuilderPackages({
                                                                                 ? 'In'
                                                                                 : 'Add'}
                                                                         </Button>
-                                                                    </>
+                                                                    </fieldset>
                                                                 )}
                                                             </Form>
                                                         </div>
@@ -848,11 +883,29 @@ export default function BuilderPackages({
                                                 >
                                                     <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
                                                         <div className="min-w-0">
-                                                            <div className="truncate text-sm font-medium">
-                                                                {
-                                                                    selectedPackage.display_name
-                                                                }
-                                                            </div>
+                                                            {selectedPackage.source_url ? (
+                                                                <a
+                                                                    className="inline-flex max-w-full items-center gap-1 truncate text-sm font-medium hover:underline"
+                                                                    href={
+                                                                        selectedPackage.source_url
+                                                                    }
+                                                                    rel="noreferrer"
+                                                                    target="_blank"
+                                                                >
+                                                                    <span className="truncate">
+                                                                        {
+                                                                            selectedPackage.display_name
+                                                                        }
+                                                                    </span>
+                                                                    <ExternalLink className="size-3 shrink-0" />
+                                                                </a>
+                                                            ) : (
+                                                                <div className="truncate text-sm font-medium">
+                                                                    {
+                                                                        selectedPackage.display_name
+                                                                    }
+                                                                </div>
+                                                            )}
                                                             <div className="truncate font-mono text-xs text-muted-foreground">
                                                                 {
                                                                     selectedPackage.composer_name
@@ -888,7 +941,12 @@ export default function BuilderPackages({
                                                             errors,
                                                             processing,
                                                         }) => (
-                                                            <>
+                                                            <fieldset
+                                                                className="contents"
+                                                                disabled={
+                                                                    isLocked
+                                                                }
+                                                            >
                                                                 <Select
                                                                     defaultValue={
                                                                         selectedPackage
@@ -896,6 +954,9 @@ export default function BuilderPackages({
                                                                             ?.dev_dependency
                                                                             ? '1'
                                                                             : '0'
+                                                                    }
+                                                                    disabled={
+                                                                        isLocked
                                                                     }
                                                                     name="install_as_dev"
                                                                 >
@@ -938,19 +999,21 @@ export default function BuilderPackages({
                                                                 <Button
                                                                     className="h-8"
                                                                     disabled={
-                                                                        processing
+                                                                        processing ||
+                                                                        isLocked
                                                                     }
                                                                     size="sm"
                                                                     variant="outline"
                                                                 >
                                                                     Save notes
                                                                 </Button>
-                                                            </>
+                                                            </fieldset>
                                                         )}
                                                     </Form>
                                                     <Button
                                                         className="mt-2 h-8 w-full text-destructive hover:text-destructive"
                                                         onClick={() =>
+                                                            !isLocked &&
                                                             router.delete(
                                                                 destroyLoadoutPackage.url(
                                                                     selectedPackage.id,
@@ -960,6 +1023,7 @@ export default function BuilderPackages({
                                                                 },
                                                             )
                                                         }
+                                                        disabled={isLocked}
                                                         size="sm"
                                                         type="button"
                                                         variant="ghost"
@@ -999,9 +1063,29 @@ export default function BuilderPackages({
                                                     className="flex items-center justify-between gap-3 rounded-md bg-muted px-3 py-2 text-sm"
                                                 >
                                                     <div className="min-w-0">
-                                                        <div className="truncate font-medium">
-                                                            {pkg.display_name}
-                                                        </div>
+                                                        {pkg.source_url ? (
+                                                            <a
+                                                                className="inline-flex max-w-full items-center gap-1 truncate font-medium hover:underline"
+                                                                href={
+                                                                    pkg.source_url
+                                                                }
+                                                                rel="noreferrer"
+                                                                target="_blank"
+                                                            >
+                                                                <span className="truncate">
+                                                                    {
+                                                                        pkg.display_name
+                                                                    }
+                                                                </span>
+                                                                <ExternalLink className="size-3 shrink-0" />
+                                                            </a>
+                                                        ) : (
+                                                            <div className="truncate font-medium">
+                                                                {
+                                                                    pkg.display_name
+                                                                }
+                                                            </div>
+                                                        )}
                                                         <div className="truncate font-mono text-xs text-muted-foreground">
                                                             {pkg.composer_name}
                                                         </div>
@@ -1009,6 +1093,7 @@ export default function BuilderPackages({
                                                     <Button
                                                         className="size-8 shrink-0 text-destructive hover:text-destructive"
                                                         onClick={() =>
+                                                            !isLocked &&
                                                             router.delete(
                                                                 destroyLoadoutPackage.url(
                                                                     pkg.id,
@@ -1018,6 +1103,7 @@ export default function BuilderPackages({
                                                                 },
                                                             )
                                                         }
+                                                        disabled={isLocked}
                                                         size="icon"
                                                         type="button"
                                                         variant="ghost"
@@ -1033,7 +1119,6 @@ export default function BuilderPackages({
                                         </div>
                                     </div>
                                 )}
-
                             </CardContent>
                         </Card>
                     </aside>
@@ -1046,6 +1131,121 @@ export default function BuilderPackages({
                 />
             </div>
         </>
+    );
+}
+
+function LockedPackageStack({
+    customPackages,
+    selectedPackages,
+}: {
+    customPackages: CustomLoadoutPackage[];
+    selectedPackages: SelectedLoadoutPackage[];
+}) {
+    const packageCount = selectedPackages.length + customPackages.length;
+
+    return (
+        <>
+            <Head title="Packages" />
+            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto p-4 pb-24 md:p-6 md:pb-24">
+                <header className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Step 5</span>
+                        <span>/</span>
+                        <span>Packages</span>
+                    </div>
+                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                        <div className="max-w-3xl">
+                            <h1 className="text-3xl font-semibold tracking-normal">
+                                Published package stack
+                            </h1>
+                        </div>
+                        <Badge className="w-fit" variant="secondary">
+                            {packageCount} packages
+                        </Badge>
+                    </div>
+                </header>
+
+                <Card className="rounded-lg">
+                    <CardContent>
+                        {packageCount > 0 ? (
+                            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                {selectedPackages.map((pkg) => (
+                                    <PackageStackItem
+                                        key={pkg.id}
+                                        composerName={pkg.composer_name}
+                                        isDev={
+                                            pkg.install_options
+                                                ?.dev_dependency ?? false
+                                        }
+                                        name={pkg.display_name}
+                                        sourceUrl={pkg.source_url}
+                                    />
+                                ))}
+                                {customPackages.map((pkg) => (
+                                    <PackageStackItem
+                                        key={pkg.id}
+                                        composerName={pkg.composer_name}
+                                        isCustom
+                                        name={pkg.display_name}
+                                        sourceUrl={pkg.source_url}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+                                No packages were added to this loadout.
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <BuilderStepNavigation
+                    next={{ href: builderReview.url(), label: 'Review' }}
+                    previous={{ href: builderRuntime.url(), label: 'Runtime' }}
+                    step={5}
+                />
+            </div>
+        </>
+    );
+}
+
+function PackageStackItem({
+    composerName,
+    isCustom = false,
+    isDev = false,
+    name,
+    sourceUrl,
+}: {
+    composerName: string | null;
+    isCustom?: boolean;
+    isDev?: boolean;
+    name: string;
+    sourceUrl: string | null;
+}) {
+    return (
+        <div className="flex min-w-0 items-start justify-between gap-3 rounded-lg border bg-muted/25 p-3">
+            <div className="min-w-0">
+                {sourceUrl ? (
+                    <a
+                        className="inline-flex max-w-full items-center gap-1 truncate text-sm font-medium hover:underline"
+                        href={sourceUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                    >
+                        <span className="truncate">{name}</span>
+                        <ExternalLink className="size-3 shrink-0" />
+                    </a>
+                ) : (
+                    <p className="truncate text-sm font-medium">{name}</p>
+                )}
+                <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
+                    {composerName}
+                </p>
+            </div>
+            <Badge variant={isCustom || isDev ? 'outline' : 'secondary'}>
+                {isCustom ? 'Custom' : isDev ? 'Dev' : 'Production'}
+            </Badge>
+        </div>
     );
 }
 

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -86,10 +85,6 @@ export function ArtifactBrowser({
                         <CardTitle className="truncate font-mono text-base">
                             {selectedArtifact.name}
                         </CardTitle>
-                        <CardDescription>
-                            {lineCount(selectedArtifact.content)} lines shaped
-                            by your selections.
-                        </CardDescription>
                     </div>
                     <Badge className="shrink-0" variant="secondary">
                         {selectedArtifact.language}
@@ -104,8 +99,4 @@ export function ArtifactBrowser({
             </Card>
         </div>
     );
-}
-
-function lineCount(content: string): number {
-    return content === '' ? 0 : content.split('\n').length;
 }

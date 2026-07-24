@@ -63,11 +63,12 @@ class PackageCatalogController extends Controller
             'loadout' => [
                 'id' => $loadout->id,
                 'title' => $loadout->title,
+                'is_locked' => $loadout->isLocked(),
                 'selected_package_ids' => $selectedPackageIds,
                 'selected_packages' => $loadout->packages()
                     ->whereNotNull('package_id')
                     ->orderBy('position')
-                    ->get(['id', 'display_name', 'composer_name', 'install_options', 'notes'])
+                    ->get(['id', 'display_name', 'composer_name', 'source_url', 'install_options', 'notes'])
                     ->values()
                     ->all(),
                 'custom_packages' => $loadout->packages()

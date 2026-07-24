@@ -201,6 +201,7 @@ class BuilderPackageCatalogPageTest extends TestCase
         $package = Package::factory()->create([
             'name' => 'Laravel Permission',
             'composer_name' => 'spatie/laravel-permission',
+            'source_url' => 'https://github.com/spatie/laravel-permission',
             'install_command' => 'composer require spatie/laravel-permission',
         ]);
 
@@ -226,6 +227,7 @@ class BuilderPackageCatalogPageTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('loadout.selected_packages', 1)
                 ->where('loadout.selected_packages.0.composer_name', 'spatie/laravel-permission')
+                ->where('loadout.selected_packages.0.source_url', 'https://github.com/spatie/laravel-permission')
                 ->has('packages.data', 0),
             );
     }

@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Layers, ShieldCheck } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import StarterKitController from '@/actions/App/Http/Controllers/Builder/StarterKitController';
 import { BuilderStepNavigation } from '@/components/builder-step-navigation';
@@ -29,13 +29,19 @@ type Values = {
     authentication: string;
     teams: boolean;
     dark_mode: string;
+    api_auth: string;
+    broadcasting: string;
+    search: string;
+    queue_monitoring: string;
+    observability: string;
 };
 
 type Props = {
+    is_locked: boolean;
     values: Values;
 };
 
-export default function StarterKit({ values }: Props) {
+export default function StarterKit({ is_locked: isLocked, values }: Props) {
     return (
         <>
             <Head title="Starter Kit" />
@@ -57,171 +63,283 @@ export default function StarterKit({ values }: Props) {
                     </div>
                 </header>
 
-                <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <section>
                     <Card className="rounded-lg">
                         <CardHeader>
                             <CardTitle>Application conventions</CardTitle>
                             <CardDescription>
-                                Start with the shape you would normally reach
-                                for, then make the exceptions explicit.
+                                {isLocked
+                                    ? 'This shared loadout is locked. Clone it from its public page to make changes.'
+                                    : 'Start with the shape you would normally reach for, then make the exceptions explicit.'}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Form
                                 id="starter-kit-form"
-                                className="grid gap-5"
+                                className="grid"
                                 {...StarterKitController.update.form()}
                             >
                                 {({ errors }) => (
-                                    <>
-                                        <div className="grid gap-4 md:grid-cols-2">
-                                            <div className="grid gap-2">
-                                                <Label>Frontend stack</Label>
-                                                <Select
+                                    <fieldset
+                                        className="contents"
+                                        disabled={isLocked}
+                                    >
+                                        <div className="grid gap-5 xl:grid-cols-2">
+                                            <SettingGroup
+                                                description="Choose the framework surface and auth starting point."
+                                                title="Application core"
+                                            >
+                                                <StarterSelect
                                                     defaultValue={
                                                         values.frontend_stack
                                                     }
+                                                    disabled={isLocked}
+                                                    error={
+                                                        errors.frontend_stack
+                                                    }
+                                                    label="Frontend stack"
                                                     name="frontend_stack"
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="react-inertia">
-                                                            React + Inertia
-                                                        </SelectItem>
-                                                        <SelectItem value="vue-inertia">
-                                                            Vue + Inertia
-                                                        </SelectItem>
-                                                        <SelectItem value="livewire">
-                                                            Livewire
-                                                        </SelectItem>
-                                                        <SelectItem value="blade">
-                                                            Blade only
-                                                        </SelectItem>
-                                                        <SelectItem value="api">
-                                                            API only
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.frontend_stack && (
-                                                    <p className="text-sm text-destructive">
-                                                        {errors.frontend_stack}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <Label>Authentication</Label>
-                                                <Select
+                                                    options={[
+                                                        [
+                                                            'react-inertia',
+                                                            'React + Inertia',
+                                                        ],
+                                                        [
+                                                            'vue-inertia',
+                                                            'Vue + Inertia',
+                                                        ],
+                                                        [
+                                                            'livewire',
+                                                            'Livewire',
+                                                        ],
+                                                        ['blade', 'Blade only'],
+                                                        ['api', 'API only'],
+                                                    ]}
+                                                />
+                                                <StarterSelect
                                                     defaultValue={
                                                         values.authentication
                                                     }
+                                                    disabled={isLocked}
+                                                    error={
+                                                        errors.authentication
+                                                    }
+                                                    label="Authentication"
                                                     name="authentication"
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="laravel-auth">
-                                                            Laravel auth
-                                                        </SelectItem>
-                                                        <SelectItem value="none">
-                                                            None
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.authentication && (
-                                                    <p className="text-sm text-destructive">
-                                                        {errors.authentication}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <Label>Team support</Label>
-                                                <Select
+                                                    options={[
+                                                        [
+                                                            'laravel-auth',
+                                                            'Laravel auth',
+                                                        ],
+                                                        ['none', 'None'],
+                                                    ]}
+                                                />
+                                            </SettingGroup>
+                                            <SettingGroup
+                                                description="Set the defaults your product should carry from day one."
+                                                title="Product defaults"
+                                            >
+                                                <StarterSelect
                                                     defaultValue={
                                                         values.teams ? '1' : '0'
                                                     }
+                                                    disabled={isLocked}
+                                                    label="Team support"
                                                     name="teams"
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="0">
-                                                            No teams
-                                                        </SelectItem>
-                                                        <SelectItem value="1">
-                                                            Include team-ready
-                                                            notes
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <Label>Dark mode</Label>
-                                                <Select
+                                                    options={[
+                                                        ['0', 'No teams'],
+                                                        [
+                                                            '1',
+                                                            'Include team-ready notes',
+                                                        ],
+                                                    ]}
+                                                />
+                                                <StarterSelect
                                                     defaultValue={
                                                         values.dark_mode
                                                     }
+                                                    disabled={isLocked}
+                                                    label="Dark mode"
                                                     name="dark_mode"
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="system">
-                                                            Follow system
-                                                        </SelectItem>
-                                                        <SelectItem value="enabled">
-                                                            Enabled
-                                                        </SelectItem>
-                                                        <SelectItem value="disabled">
-                                                            Disabled
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                                    options={[
+                                                        [
+                                                            'system',
+                                                            'Follow system',
+                                                        ],
+                                                        ['enabled', 'Enabled'],
+                                                        [
+                                                            'disabled',
+                                                            'Disabled',
+                                                        ],
+                                                    ]}
+                                                />
+                                            </SettingGroup>
+                                            <SettingGroup
+                                                description="First-party building blocks added directly to generated files."
+                                                title="Laravel foundation"
+                                            >
+                                                <StarterSelect
+                                                    defaultValue={
+                                                        values.api_auth
+                                                    }
+                                                    disabled={isLocked}
+                                                    label="API authentication"
+                                                    name="api_auth"
+                                                    options={[
+                                                        ['none', 'None'],
+                                                        [
+                                                            'sanctum',
+                                                            'Laravel Sanctum',
+                                                        ],
+                                                    ]}
+                                                />
+                                                <StarterSelect
+                                                    defaultValue={
+                                                        values.broadcasting
+                                                    }
+                                                    disabled={isLocked}
+                                                    label="Broadcasting"
+                                                    name="broadcasting"
+                                                    options={[
+                                                        ['none', 'None'],
+                                                        [
+                                                            'reverb',
+                                                            'Laravel Reverb',
+                                                        ],
+                                                    ]}
+                                                />
+                                                <StarterSelect
+                                                    defaultValue={values.search}
+                                                    disabled={isLocked}
+                                                    error={errors.search}
+                                                    label="Search"
+                                                    name="search"
+                                                    options={[
+                                                        ['none', 'None'],
+                                                        [
+                                                            'scout',
+                                                            'Laravel Scout',
+                                                        ],
+                                                    ]}
+                                                />
+                                                <StarterSelect
+                                                    defaultValue={
+                                                        values.queue_monitoring
+                                                    }
+                                                    disabled={isLocked}
+                                                    label="Queue monitoring"
+                                                    name="queue_monitoring"
+                                                    options={[
+                                                        ['none', 'None'],
+                                                        [
+                                                            'horizon',
+                                                            'Laravel Horizon (Redis)',
+                                                        ],
+                                                    ]}
+                                                />
+                                                <StarterSelect
+                                                    defaultValue={
+                                                        values.observability
+                                                    }
+                                                    disabled={isLocked}
+                                                    label="Observability"
+                                                    name="observability"
+                                                    options={[
+                                                        ['none', 'None'],
+                                                        [
+                                                            'telescope',
+                                                            'Laravel Telescope',
+                                                        ],
+                                                        [
+                                                            'pulse',
+                                                            'Laravel Pulse',
+                                                        ],
+                                                    ]}
+                                                />
+                                            </SettingGroup>
                                         </div>
-
-                                    </>
+                                    </fieldset>
                                 )}
                             </Form>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="h-fit rounded-lg">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Layers className="size-5" />
-                                What this sets
-                            </CardTitle>
-                            <CardDescription>
-                                These choices set the conventions the project
-                                starts with.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm text-muted-foreground">
-                            <div className="rounded-md bg-muted p-3">
-                                <ShieldCheck className="mb-2 size-4" />
-                                The README records these choices, and the
-                                frontend selection informs the generated
-                                package manifest.
-                            </div>
                         </CardContent>
                     </Card>
                 </section>
 
                 <BuilderStepNavigation
                     previous={{ href: builderProject.url(), label: 'Project' }}
+                    next={
+                        isLocked
+                            ? { href: builderRuntime.url(), label: 'Runtime' }
+                            : undefined
+                    }
                     step={2}
-                    submitFormId="starter-kit-form"
+                    submitFormId={isLocked ? undefined : 'starter-kit-form'}
                 />
             </div>
         </>
+    );
+}
+
+function SettingGroup({
+    children,
+    description,
+    title,
+}: {
+    children: ReactNode;
+    description: string;
+    title: string;
+}) {
+    return (
+        <section className="overflow-hidden rounded-lg border bg-muted/25">
+            <div className="border-b bg-background/60 px-4 py-3">
+                <h2 className="text-sm font-medium">{title}</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                    {description}
+                </p>
+            </div>
+            <div className="divide-y">{children}</div>
+        </section>
+    );
+}
+
+function StarterSelect({
+    defaultValue,
+    disabled,
+    error,
+    label,
+    name,
+    options,
+}: {
+    defaultValue: string;
+    disabled: boolean;
+    error?: string;
+    label: string;
+    name: string;
+    options: [string, string][];
+}) {
+    return (
+        <div className="grid grid-cols-2 items-center gap-4 px-4 py-3">
+            <Label htmlFor={name}>{label}</Label>
+            <div className="grid gap-1.5">
+                <Select
+                    defaultValue={defaultValue}
+                    disabled={disabled}
+                    name={name}
+                >
+                    <SelectTrigger id={name}>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {options.map(([value, optionLabel]) => (
+                            <SelectItem key={value} value={value}>
+                                {optionLabel}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {error && <p className="text-xs text-destructive">{error}</p>}
+            </div>
+        </div>
     );
 }
 

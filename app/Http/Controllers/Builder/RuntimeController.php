@@ -17,6 +17,7 @@ class RuntimeController extends Controller
         $loadout = $builder->currentDraft($request->session(), $request->user());
 
         return Inertia::render('builder/runtime', [
+            'is_locked' => $loadout->isLocked(),
             'values' => [
                 'database' => data_get($loadout->builder_state, 'runtime.database', 'mysql'),
                 'cache' => data_get($loadout->builder_state, 'runtime.cache', 'database'),
@@ -31,6 +32,7 @@ class RuntimeController extends Controller
     public function update(UpdateRuntimeRequest $request, LoadoutBuilder $builder): RedirectResponse
     {
         $loadout = $builder->currentDraft($request->session(), $request->user());
+        $builder->ensureEditable($loadout);
         $state = $loadout->builder_state ?? [];
         $state['runtime'] = $request->validated();
 

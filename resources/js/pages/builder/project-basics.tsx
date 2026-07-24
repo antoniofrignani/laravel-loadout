@@ -1,5 +1,4 @@
 import { Form, Head } from '@inertiajs/react';
-import { Boxes, Info } from 'lucide-react';
 
 import ProjectBasicsController from '@/actions/App/Http/Controllers/Builder/ProjectBasicsController';
 import { BuilderStepNavigation } from '@/components/builder-step-navigation';
@@ -20,7 +19,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { project as builderProject } from '@/routes/builder';
+import {
+    project as builderProject,
+    starter as builderStarter,
+} from '@/routes/builder';
 
 type Values = {
     project_name: string;
@@ -32,10 +34,22 @@ type Values = {
 };
 
 type Props = {
+    loadout: {
+        is_locked: boolean;
+    };
     values: Values;
 };
 
-export default function ProjectBasics({ values }: Props) {
+const packageManagers = [
+    { value: 'npm', label: 'npm' },
+    { value: 'pnpm', label: 'pnpm' },
+    { value: 'bun', label: 'Bun' },
+    { value: 'yarn', label: 'Yarn' },
+] as const;
+
+export default function ProjectBasics({ loadout, values }: Props) {
+    const isLocked = loadout.is_locked;
+
     return (
         <>
             <Head title="Project Basics" />
@@ -57,88 +71,112 @@ export default function ProjectBasics({ values }: Props) {
                     </div>
                 </header>
 
-                <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <section>
                     <Card className="rounded-lg">
                         <CardHeader>
                             <CardTitle>Project brief</CardTitle>
                             <CardDescription>
-                                Write this for the person who will pick up the
-                                loadout later, including future you.
+                                {isLocked
+                                    ? 'This shared loadout is locked. Clone it from its public page to make changes.'
+                                    : 'Write this for the person who will pick up the loadout later, including future you.'}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Form
                                 id="project-basics-form"
-                                className="grid gap-5"
+                                className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)] lg:gap-10"
                                 {...ProjectBasicsController.update.form()}
                             >
                                 {({ errors }) => (
-                                    <>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="project_name">
-                                                Project name
-                                            </Label>
-                                            <Input
-                                                id="project_name"
-                                                name="project_name"
-                                                defaultValue={
-                                                    values.project_name
-                                                }
-                                                placeholder="Agency App Baseline"
-                                            />
-                                            {errors.project_name && (
-                                                <p className="text-sm text-destructive">
-                                                    {errors.project_name}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="app_name">
-                                                App name
-                                            </Label>
-                                            <Input
-                                                id="app_name"
-                                                name="app_name"
-                                                defaultValue={values.app_name}
-                                                placeholder="Acme Portal"
-                                            />
-                                            {errors.app_name && (
-                                                <p className="text-sm text-destructive">
-                                                    {errors.app_name}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="description">
-                                                Description
-                                            </Label>
-                                            <Textarea
-                                                id="description"
-                                                name="description"
-                                                defaultValue={
-                                                    values.description ?? ''
-                                                }
-                                                placeholder="A solid Laravel baseline for client portals and internal tools."
-                                            />
-                                            {errors.description && (
-                                                <p className="text-sm text-destructive">
-                                                    {errors.description}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="grid gap-4 md:grid-cols-3">
+                                    <fieldset
+                                        className="contents"
+                                        disabled={isLocked}
+                                    >
+                                        <div className="grid content-start gap-5">
+                                            <div className="grid gap-5 sm:grid-cols-2">
                                             <div className="grid gap-2">
-                                                <Label>PHP version</Label>
+                                                <Label htmlFor="project_name">
+                                                    Project name
+                                                </Label>
+                                                <Input
+                                                    id="project_name"
+                                                    name="project_name"
+                                                    defaultValue={
+                                                        values.project_name
+                                                    }
+                                                    placeholder="Agency App Baseline"
+                                                />
+                                                {errors.project_name && (
+                                                    <p className="text-sm text-destructive">
+                                                        {errors.project_name}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="app_name">
+                                                    App name
+                                                </Label>
+                                                <Input
+                                                    id="app_name"
+                                                    name="app_name"
+                                                    defaultValue={
+                                                        values.app_name
+                                                    }
+                                                    placeholder="Acme Portal"
+                                                />
+                                                {errors.app_name && (
+                                                    <p className="text-sm text-destructive">
+                                                        {errors.app_name}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="description">
+                                                    Description
+                                                </Label>
+                                                <Textarea
+                                                    id="description"
+                                                    name="description"
+                                                    defaultValue={
+                                                        values.description ??
+                                                        ''
+                                                    }
+                                                    placeholder="A solid Laravel baseline for client portals and internal tools."
+                                                />
+                                                {errors.description && (
+                                                    <p className="text-sm text-destructive">
+                                                        {errors.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="overflow-hidden rounded-lg border bg-muted/25">
+                                            <div className="border-b bg-background/60 px-4 py-3">
+                                                <p className="text-sm font-medium">
+                                                    Foundation
+                                                </p>
+                                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                                    Runtime and frontend defaults
+                                                    for this loadout.
+                                                </p>
+                                            </div>
+                                            <div className="divide-y">
+                                            <div className="grid grid-cols-2 items-center gap-4 px-4 py-3">
+                                                <Label htmlFor="php_version">
+                                                    PHP version
+                                                </Label>
                                                 <Select
                                                     defaultValue={
                                                         values.php_version
                                                     }
+                                                    disabled={isLocked}
                                                     name="php_version"
                                                 >
-                                                    <SelectTrigger>
+                                                    <SelectTrigger id="php_version">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -151,16 +189,18 @@ export default function ProjectBasics({ values }: Props) {
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-
-                                            <div className="grid gap-2">
-                                                <Label>Laravel version</Label>
+                                            <div className="grid grid-cols-2 items-center gap-4 px-4 py-3">
+                                                <Label htmlFor="laravel_version">
+                                                    Laravel version
+                                                </Label>
                                                 <Select
                                                     defaultValue={
                                                         values.laravel_version
                                                     }
+                                                    disabled={isLocked}
                                                     name="laravel_version"
                                                 >
-                                                    <SelectTrigger>
+                                                    <SelectTrigger id="laravel_version">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -170,58 +210,57 @@ export default function ProjectBasics({ values }: Props) {
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-
-                                            <div className="grid gap-2">
-                                                <Label>Package manager</Label>
+                                            <div className="grid grid-cols-2 items-center gap-4 px-4 py-3">
+                                                <Label htmlFor="package_manager">
+                                                    Package manager
+                                                </Label>
                                                 <Select
                                                     defaultValue={
                                                         values.package_manager
                                                     }
+                                                    disabled={isLocked}
                                                     name="package_manager"
                                                 >
-                                                    <SelectTrigger>
+                                                    <SelectTrigger id="package_manager">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="yarn">
-                                                            Yarn
-                                                        </SelectItem>
+                                                        {packageManagers.map(
+                                                            (packageManager) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        packageManager.value
+                                                                    }
+                                                                    value={
+                                                                        packageManager.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        packageManager.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+                                            </div>
                                         </div>
-
-                                    </>
+                                    </fieldset>
                                 )}
                             </Form>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="h-fit rounded-lg">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Boxes className="size-5" />
-                                Builder path
-                            </CardTitle>
-                            <CardDescription>
-                                The next screens will refine the stack before
-                                generation.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm text-muted-foreground">
-                            <div className="rounded-md bg-muted p-3">
-                                <Info className="mb-2 size-4" />
-                                This first step currently persists the project
-                                metadata used by generated artifacts. Starter
-                                kit and runtime steps come next.
-                            </div>
                         </CardContent>
                     </Card>
                 </section>
 
                 <BuilderStepNavigation
+                    next={
+                        isLocked
+                            ? { href: builderStarter.url(), label: 'Starter' }
+                            : undefined
+                    }
                     step={1}
-                    submitFormId="project-basics-form"
+                    submitFormId={isLocked ? undefined : 'project-basics-form'}
                 />
             </div>
         </>

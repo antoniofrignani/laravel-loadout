@@ -24,7 +24,7 @@ class UpdateProjectBasicsRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:500'],
             'php_version' => ['required', Rule::in(['8.4', '8.5'])],
             'laravel_version' => ['required', Rule::in(['13.x'])],
-            'package_manager' => ['required', Rule::in(['yarn'])],
+            'package_manager' => ['required', Rule::in(['npm', 'pnpm', 'bun', 'yarn'])],
         ];
     }
 }

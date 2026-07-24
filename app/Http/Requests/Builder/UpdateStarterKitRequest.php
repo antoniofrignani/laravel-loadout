@@ -23,6 +23,11 @@ class UpdateStarterKitRequest extends FormRequest
             'authentication' => ['required', Rule::in(['laravel-auth', 'none'])],
             'teams' => ['required', 'boolean'],
             'dark_mode' => ['required', Rule::in(['system', 'enabled', 'disabled'])],
+            'api_auth' => ['nullable', Rule::in(['none', 'sanctum'])],
+            'broadcasting' => ['nullable', Rule::in(['none', 'reverb'])],
+            'search' => ['nullable', Rule::in(['none', 'scout'])],
+            'queue_monitoring' => ['nullable', Rule::in(['none', 'horizon'])],
+            'observability' => ['nullable', Rule::in(['none', 'telescope', 'pulse'])],
         ];
     }
 }

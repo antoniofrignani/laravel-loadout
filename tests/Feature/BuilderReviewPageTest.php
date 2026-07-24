@@ -72,6 +72,47 @@ class BuilderReviewPageTest extends TestCase
             );
     }
 
+    public function test_first_party_foundation_choices_shape_generated_artifacts(): void
+    {
+        $this->withoutVite();
+
+        $this->get(route('builder.starter'))->assertOk();
+        $this->put(route('builder.starter.update'), [
+            'frontend_stack' => 'react-inertia',
+            'authentication' => 'laravel-auth',
+            'teams' => false,
+            'dark_mode' => 'system',
+            'api_auth' => 'sanctum',
+            'broadcasting' => 'reverb',
+            'search' => 'scout',
+            'queue_monitoring' => 'horizon',
+            'observability' => 'pulse',
+        ])->assertRedirect(route('builder.runtime'));
+
+        $this->get(route('builder.review'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('artifacts.0.content', fn (string $content): bool => str_contains($content, '"laravel/reverb": "*"')
+                    && str_contains($content, '"laravel/sanctum": "*"')
+                    && str_contains($content, '"laravel/scout": "*"')
+                    && str_contains($content, '"laravel/horizon": "*"')
+                    && str_contains($content, '"laravel/pulse": "*"')
+                    && str_contains($content, '"reverb": "@php artisan reverb:start"'))
+                ->where('artifacts.1.content', fn (string $content): bool => str_contains($content, '"laravel-echo": "^2.0.0"')
+                    && str_contains($content, '"pusher-js": "^8.4.0"'))
+                ->where('artifacts.2.content', fn (string $content): bool => str_contains($content, 'FORWARD_REVERB_PORT')
+                    && str_contains($content, 'redis:'))
+                ->where('artifacts.3.content', fn (string $content): bool => str_contains($content, 'BROADCAST_CONNECTION=reverb')
+                    && str_contains($content, 'QUEUE_CONNECTION=redis'))
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains($content, 'reverb:install')
+                    && str_contains($content, 'horizon:install')
+                    && str_contains($content, 'scout:install')
+                    && str_contains($content, 'pulse:install'))
+                ->has('artifacts', 6)
+                ->where('artifacts.5.name', 'resources/js/echo.ts'),
+            );
+    }
+
     public function test_readme_includes_the_public_url_only_after_the_loadout_is_published(): void
     {
         $this->withoutVite();
@@ -127,6 +168,29 @@ class BuilderReviewPageTest extends TestCase
                         && str_contains($content, "\nphp artisan migrate\n")
                         && ! str_contains($content, './vendor/bin/sail composer install');
                 }),
+            );
+    }
+
+    public function test_generated_artifacts_use_the_selected_package_manager(): void
+    {
+        $this->withoutVite();
+
+        $this->put(route('builder.project.update'), [
+            'project_name' => 'Bun Starter',
+            'app_name' => 'Bun App',
+            'php_version' => '8.5',
+            'laravel_version' => '13.x',
+            'package_manager' => 'bun',
+        ])->assertRedirect(route('builder.starter'));
+
+        $this->get(route('builder.review'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('artifacts.1.content', fn (string $content): bool => str_contains($content, '"packageManager": "bun@1.2.0"'))
+                ->where('artifacts.2.content', fn (string $content): bool => str_contains($content, 'runtimes/8.5'))
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains($content, '- Package manager: Bun'))
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains($content, './vendor/bin/sail bun install'))
+                ->where('artifacts.4.content', fn (string $content): bool => str_contains($content, 'laravelsail/php85-composer:latest')),
             );
     }
 }

@@ -20,6 +20,7 @@ class ProjectBasicsController extends Controller
             'loadout' => [
                 'title' => $loadout->title,
                 'description' => $loadout->description,
+                'is_locked' => $loadout->isLocked(),
             ],
             'values' => [
                 'project_name' => data_get($loadout->builder_state, 'project.project_name', $loadout->title),
@@ -35,13 +36,14 @@ class ProjectBasicsController extends Controller
     public function update(UpdateProjectBasicsRequest $request, LoadoutBuilder $builder): RedirectResponse
     {
         $loadout = $builder->currentDraft($request->session(), $request->user());
+        $builder->ensureEditable($loadout);
         $validated = $request->validated();
         $state = is_array($loadout->builder_state) ? $loadout->builder_state : [];
         $state['project'] = $validated;
 
         $loadout->forceFill([
             'title' => $validated['project_name'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'builder_state' => $state,
             'current_step' => max($loadout->current_step, 2),
         ])->save();

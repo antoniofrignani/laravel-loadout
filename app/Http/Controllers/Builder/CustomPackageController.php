@@ -25,6 +25,7 @@ class CustomPackageController extends Controller
         }
 
         $loadout = $builder->currentDraft($request->session(), $request->user());
+        $builder->ensureEditable($loadout);
 
         $selection = $builder->addCustomPackage($loadout, $package, $request->user());
         $suggestion = $selection->packageSuggestion()->firstOrFail();

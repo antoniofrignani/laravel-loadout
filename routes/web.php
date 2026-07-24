@@ -3,6 +3,7 @@
 use App\Http\Controllers\Builder\CustomPackageController;
 use App\Http\Controllers\Builder\DownloadController;
 use App\Http\Controllers\Builder\LoadoutPackageController;
+use App\Http\Controllers\Builder\NewLoadoutController;
 use App\Http\Controllers\Builder\PackageCatalogController;
 use App\Http\Controllers\Builder\ProjectBasicsController;
 use App\Http\Controllers\Builder\PublishController;
@@ -30,6 +31,7 @@ Route::get('u/{user:profile_slug}', CurationProfileController::class)->name('pro
 Route::get('package-collections/{package_collection:slug}', [PackageCollectionController::class, 'show'])->name('package-collections.show');
 Route::post('package-collections/{package_collection:slug}/import', PackageCollectionImportController::class)->name('package-collections.import');
 Route::get('builder/project', [ProjectBasicsController::class, 'show'])->name('builder.project');
+Route::post('builder/new', NewLoadoutController::class)->name('builder.new');
 Route::put('builder/project', [ProjectBasicsController::class, 'update'])->name('builder.project.update');
 Route::get('builder/starter', [StarterKitController::class, 'show'])->name('builder.starter');
 Route::put('builder/starter', [StarterKitController::class, 'update'])->name('builder.starter.update');

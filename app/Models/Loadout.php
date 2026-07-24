@@ -62,6 +62,11 @@ class Loadout extends Model
         return 'public_id';
     }
 
+    public function isLocked(): bool
+    {
+        return $this->published_at !== null;
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Loadout $loadout): void {

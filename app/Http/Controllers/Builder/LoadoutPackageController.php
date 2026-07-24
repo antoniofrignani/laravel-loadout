@@ -23,6 +23,7 @@ class LoadoutPackageController extends Controller
     ): RedirectResponse {
         $validated = $request->validated();
         $loadout = $builder->currentDraft($request->session(), $request->user());
+        $builder->ensureEditable($loadout);
         $package = $this->packageForSelection($validated, $advisor);
 
         $builder->selectPackage($loadout, $package);
@@ -35,6 +36,7 @@ class LoadoutPackageController extends Controller
         $loadout = $builder->currentDraft($request->session(), $request->user());
 
         abort_unless($loadoutPackage->loadout_id === $loadout->id, 404);
+        $builder->ensureEditable($loadout);
 
         $validated = $request->validated();
 
@@ -53,6 +55,7 @@ class LoadoutPackageController extends Controller
         $loadout = $builder->currentDraft($request->session(), $request->user());
 
         abort_unless($loadoutPackage->loadout_id === $loadout->id, 404);
+        $builder->ensureEditable($loadout);
 
         $loadoutPackage->delete();
 

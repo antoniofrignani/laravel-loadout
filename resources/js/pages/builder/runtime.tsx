@@ -1,5 +1,4 @@
 import { Form, Head } from '@inertiajs/react';
-import { Database, ServerCog } from 'lucide-react';
 
 import RuntimeController from '@/actions/App/Http/Controllers/Builder/RuntimeController';
 import { BuilderStepNavigation } from '@/components/builder-step-navigation';
@@ -34,10 +33,11 @@ type Values = {
 };
 
 type Props = {
+    is_locked: boolean;
     values: Values;
 };
 
-export default function Runtime({ values }: Props) {
+export default function Runtime({ is_locked: isLocked, values }: Props) {
     return (
         <>
             <Head title="Runtime" />
@@ -59,26 +59,31 @@ export default function Runtime({ values }: Props) {
                     </div>
                 </header>
 
-                <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <section>
                     <Card className="rounded-lg">
                         <CardHeader>
                             <CardTitle>Local services</CardTitle>
                             <CardDescription>
-                                Keep the default lean. Add services only when
-                                the application will use them.
+                                {isLocked
+                                    ? 'This shared loadout is locked. Clone it from its public page to make changes.'
+                                    : 'Keep the default lean. Add services only when the application will use them.'}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Form
                                 id="runtime-form"
-                                className="grid gap-5"
+                                className="grid"
                                 {...RuntimeController.update.form()}
                             >
                                 {({ errors }) => (
-                                    <>
-                                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    <fieldset
+                                        className="contents"
+                                        disabled={isLocked}
+                                    >
+                                        <div className="grid gap-3 xl:grid-cols-2">
                                             <RuntimeSelect
                                                 defaultValue={values.database}
+                                                disabled={isLocked}
                                                 error={errors.database}
                                                 label="Database"
                                                 name="database"
@@ -90,6 +95,7 @@ export default function Runtime({ values }: Props) {
                                             />
                                             <RuntimeSelect
                                                 defaultValue={values.cache}
+                                                disabled={isLocked}
                                                 error={errors.cache}
                                                 label="Cache"
                                                 name="cache"
@@ -100,6 +106,7 @@ export default function Runtime({ values }: Props) {
                                             />
                                             <RuntimeSelect
                                                 defaultValue={values.queue}
+                                                disabled={isLocked}
                                                 error={errors.queue}
                                                 label="Queue"
                                                 name="queue"
@@ -110,6 +117,7 @@ export default function Runtime({ values }: Props) {
                                             />
                                             <RuntimeSelect
                                                 defaultValue={values.mail}
+                                                disabled={isLocked}
                                                 error={errors.mail}
                                                 label="Mail"
                                                 name="mail"
@@ -121,6 +129,7 @@ export default function Runtime({ values }: Props) {
                                             />
                                             <RuntimeSelect
                                                 defaultValue={values.search}
+                                                disabled={isLocked}
                                                 error={errors.search}
                                                 label="Search"
                                                 name="search"
@@ -133,6 +142,7 @@ export default function Runtime({ values }: Props) {
                                                 defaultValue={
                                                     values.local_runtime
                                                 }
+                                                disabled={isLocked}
                                                 error={errors.local_runtime}
                                                 label="Local runtime"
                                                 name="local_runtime"
@@ -143,38 +153,22 @@ export default function Runtime({ values }: Props) {
                                             />
                                         </div>
 
-                                    </>
+                                    </fieldset>
                                 )}
                             </Form>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="h-fit rounded-lg">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <ServerCog className="size-5" />
-                                What gets wired up
-                            </CardTitle>
-                            <CardDescription>
-                                These selections drive the generated compose
-                                file and environment values.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm text-muted-foreground">
-                            <div className="rounded-md bg-muted p-3">
-                                <Database className="mb-2 size-4" />
-                                Redis and Meilisearch are included in
-                                `compose.yaml` only when selected here or
-                                required by selected packages.
-                            </div>
                         </CardContent>
                     </Card>
                 </section>
 
                 <BuilderStepNavigation
                     previous={{ href: builderStarter.url(), label: 'Starter' }}
+                    next={
+                        isLocked
+                            ? { href: builderPackages.url(), label: 'Packages' }
+                            : undefined
+                    }
                     step={3}
-                    submitFormId="runtime-form"
+                    submitFormId={isLocked ? undefined : 'runtime-form'}
                 />
             </div>
         </>
@@ -183,22 +177,25 @@ export default function Runtime({ values }: Props) {
 
 function RuntimeSelect({
     defaultValue,
+    disabled,
     error,
     label,
     name,
     options,
 }: {
     defaultValue: string;
+    disabled: boolean;
     error?: string;
     label: string;
     name: string;
     options: [string, string][];
 }) {
     return (
-        <div className="grid gap-2">
-            <Label>{label}</Label>
-            <Select defaultValue={defaultValue} name={name}>
-                <SelectTrigger>
+        <div className="grid grid-cols-2 items-center gap-4 rounded-lg border bg-muted/25 px-4 py-3">
+            <Label htmlFor={name}>{label}</Label>
+            <div className="grid gap-1.5">
+            <Select defaultValue={defaultValue} disabled={disabled} name={name}>
+                <SelectTrigger id={name}>
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -209,7 +206,8 @@ function RuntimeSelect({
                     ))}
                 </SelectContent>
             </Select>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-xs text-destructive">{error}</p>}
+            </div>
         </div>
     );
 }

@@ -25,6 +25,11 @@ class LoadoutBuilder
         $session->put(self::SessionKey, $loadout->id);
     }
 
+    public function ensureEditable(Loadout $loadout): void
+    {
+        abort_if($loadout->isLocked(), 403, 'This loadout is locked after its share link was created. Clone it to make changes.');
+    }
+
     public function currentDraft(Session $session, ?User $user = null): Loadout
     {
         $loadoutId = $session->get(self::SessionKey);
@@ -51,6 +56,11 @@ class LoadoutBuilder
             }
         }
 
+        return $this->startNewDraft($session, $user);
+    }
+
+    public function startNewDraft(Session $session, ?User $user = null): Loadout
+    {
         $loadout = Loadout::query()->create([
             'user_id' => $user?->id,
             'title' => 'Untitled Loadout',
@@ -59,7 +69,7 @@ class LoadoutBuilder
             'builder_state' => [],
         ]);
 
-        $session->put(self::SessionKey, $loadout->id);
+        $this->useDraft($session, $loadout);
 
         return $loadout;
     }

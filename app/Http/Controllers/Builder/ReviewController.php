@@ -22,6 +22,8 @@ class ReviewController extends Controller
                 'title' => $loadout->title,
                 'public_id' => $loadout->public_id,
                 'slug' => $loadout->slug,
+                'visibility' => $loadout->visibility->value,
+                'is_locked' => $loadout->isLocked(),
                 'is_shareable' => $loadout->visibility !== LoadoutVisibility::Private,
                 'share_url' => $loadout->visibility !== LoadoutVisibility::Private
                     ? route('loadouts.show', $loadout)
