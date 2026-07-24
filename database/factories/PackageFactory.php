@@ -42,7 +42,7 @@ class PackageFactory extends Factory
             'migration_commands' => [],
             'required_services' => [],
             'laravel_version_constraints' => ['^13.0'],
-            'php_version_constraints' => ['^8.3'],
+            'php_version_constraints' => ['^8.4'],
             'tags' => fake()->words(3),
             'maintainer_name' => fake()->company(),
             'status' => PackageStatus::Curated,

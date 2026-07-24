@@ -167,7 +167,7 @@ class PackageCatalogSeeder extends Seeder
                     'migration_commands' => $package['migration_commands'] ?? [],
                     'required_services' => $package['required_services'] ?? [],
                     'laravel_version_constraints' => ['^13.0'],
-                    'php_version_constraints' => ['^8.3'],
+                    'php_version_constraints' => ['^8.4'],
                     'tags' => $package['tags'],
                     'is_official' => $package['is_official'] ?? false,
                     'is_featured' => $package['is_featured'] ?? true,
