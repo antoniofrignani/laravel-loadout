@@ -186,6 +186,7 @@ class BuilderReviewPageTest extends TestCase
         $this->get(route('builder.review'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->where('artifacts.0.content', fn (string $content): bool => str_contains($content, '"name": "laravel-loadout/bun-starter"'))
                 ->where('artifacts.1.content', fn (string $content): bool => str_contains($content, '"packageManager": "bun@1.2.0"'))
                 ->where('artifacts.2.content', fn (string $content): bool => str_contains($content, 'runtimes/8.5'))
                 ->where('artifacts.4.content', fn (string $content): bool => str_contains($content, '- Package manager: Bun'))

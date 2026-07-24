@@ -16,7 +16,7 @@ class DownloadController extends Controller
         $path = $archives->build($loadout);
 
         return response()
-            ->download($path, 'laravel-loadout-'.$loadout->slug.'.zip')
+            ->download($path, $loadout->downloadFilename())
             ->deleteFileAfterSend();
     }
 }

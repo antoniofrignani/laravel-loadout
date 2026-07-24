@@ -61,10 +61,16 @@ class TemplateArchiveBuilderTest extends TestCase
     {
         $this->withoutVite();
 
-        $this->get(route('builder.review'))->assertOk();
+        $this->put(route('builder.project.update'), [
+            'project_name' => 'Client Portal',
+            'app_name' => 'Client Portal',
+            'php_version' => '8.5',
+            'laravel_version' => '13.x',
+            'package_manager' => 'yarn',
+        ])->assertRedirect(route('builder.starter'));
 
         $this
             ->get(route('builder.download'))
-            ->assertDownload();
+            ->assertDownload('laravel-loadout-client-portal.zip');
     }
 }

@@ -278,14 +278,18 @@ class LoadoutSharingTest extends TestCase
     public function test_shared_loadout_can_be_downloaded_as_zip(): void
     {
         $loadout = Loadout::factory()->create([
+            'title' => 'Agency Template',
             'slug' => 'agency-starter',
+            'builder_state' => [
+                'project' => ['project_name' => 'Agency Template'],
+            ],
             'visibility' => LoadoutVisibility::Unlisted,
             'published_at' => now(),
         ]);
 
         $this
             ->get(route('loadouts.download', $loadout))
-            ->assertDownload('laravel-loadout-agency-starter.zip');
+            ->assertDownload('laravel-loadout-agency-template.zip');
     }
 
     public function test_shared_loadout_can_be_cloned_into_current_builder_session(): void

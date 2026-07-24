@@ -67,6 +67,18 @@ class Loadout extends Model
         return $this->published_at !== null;
     }
 
+    public function projectSlug(): string
+    {
+        $projectName = data_get($this->builder_state, 'project.project_name');
+
+        return Str::slug(is_string($projectName) ? $projectName : $this->title) ?: 'laravel-starter';
+    }
+
+    public function downloadFilename(): string
+    {
+        return 'laravel-loadout-'.$this->projectSlug().'.zip';
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Loadout $loadout): void {

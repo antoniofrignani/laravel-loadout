@@ -17,7 +17,7 @@ class TemplateArchiveBuilder
 
         File::ensureDirectoryExists($directory);
 
-        $path = $directory.'/laravel-loadout-'.$loadout->slug.'-'.str()->random(8).'.zip';
+        $path = $directory.'/'.str($loadout->downloadFilename())->beforeLast('.zip')->toString().'-'.str()->random(8).'.zip';
         $zip = new ZipArchive;
 
         if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {

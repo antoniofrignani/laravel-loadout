@@ -109,7 +109,7 @@ class ArtifactGenerator
         }
 
         return $this->prettyJson([
-            'name' => 'laravel-loadout/'.str($loadout->slug)->slug()->toString(),
+            'name' => $this->composerPackageName($loadout),
             'type' => 'project',
             'description' => $loadout->description ?: 'Generated Laravel Loadout starter.',
             'require' => $require,
@@ -529,6 +529,11 @@ TYPESCRIPT;
         return in_array($packageManager, ['npm', 'pnpm', 'bun', 'yarn'], true)
             ? $packageManager
             : 'yarn';
+    }
+
+    private function composerPackageName(Loadout $loadout): string
+    {
+        return 'laravel-loadout/'.$loadout->projectSlug();
     }
 
     private function sailPhpVersion(Loadout $loadout): string
